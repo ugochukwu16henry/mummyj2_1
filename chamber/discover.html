@@ -37,6 +37,9 @@
 </head>
 
 <body>
+    <!-- Skip Link for Accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
     <!-- Header -->
     <header>
         <div class="logo">
@@ -57,7 +60,7 @@
     <div id="visit-message" class="visit-message"></div>
 
     <!-- Main Content -->
-    <main class="discover-main">
+    <main id="main-content" class="discover-main" role="main">
         <h1>Discover Uyo</h1>
         <p class="discover-intro">Explore the vibrant city of Uyo and discover what makes Akwa Ibom State's capital a thriving business destination.</p>
         
@@ -67,9 +70,9 @@
     </main>
 
     <!-- Modal -->
-    <div id="info-modal" class="modal">
+    <div id="info-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
         <div class="modal-content">
-            <span class="close-modal">&times;</span>
+            <button class="close-modal" aria-label="Close modal">&times;</button>
             <h2 id="modal-title"></h2>
             <img id="modal-image" src="" alt="">
             <address id="modal-address"></address>

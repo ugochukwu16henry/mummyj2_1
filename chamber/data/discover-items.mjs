@@ -1,10 +1,16 @@
+// Discover items data with enhanced structure and validation
 export const discoverItems = [
     {
         id: 1,
         name: "Ibom Plaza",
         address: "Aka Road, Uyo, Akwa Ibom State",
         description: "A modern shopping complex and business hub featuring retail stores, restaurants, and office spaces. Perfect for business meetings and shopping.",
-        image: "images/ibom-plaza.webp"
+        image: "images/ibom-plaza.webp",
+        category: "Shopping & Business",
+        coordinates: { lat: 5.0378, lng: 7.9085 },
+        established: "2010",
+        website: "https://ibomplaza.com",
+        accessibility: true
     },
     {
         id: 2,
