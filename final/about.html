@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="About Mummy J’s Treats – Marylou’s story, contact & order form">
+    <title>About & Contact | Mummy J’s Treats</title>
+    <link rel="icon" href="images/favicon.ico">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Mummy J’s Treats</div>
+        <nav>
+            <div class="hamburger">☰</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu & Services</a></li>
+                <li><a href="about.html">About & Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h1>About Us</h1>
+        <section style="text-align:center;max-width:800px;margin:0 auto;">
+            <img src="images/marylou.jpg" alt="Marylou – Owner" loading="lazy" style="border-radius:50%;width:200px;">
+            <h2>Hi, I’m Marylou (“Mummy J”)</h2>
+            <p>For over 10 years I’ve been baking and cooking with love for families in Uyo. What started in my home
+                kitchen is now a full business serving birthdays, weddings, and everyday cravings.</p>
+            <p>Location: No. 12 Osong Ama Road, Uyo<br>Open: Mon–Sat 8am–7pm • Sun 12pm–6pm</p>
+        </section>
+
+        <section id="contact">
+            <h2>Place Your Order</h2>
+            <form action="thankyou.html" method="GET">
+                <input type="text" name="name" placeholder="Your Name" required>
+                <input type="tel" name="phone" placeholder="Phone Number" required>
+                <input type="text" name="item" placeholder="What would you like?">
+                <select name="service">
+                    <option>Pickup</option>
+                    <option>Home Delivery (+₦1000)</option>
+                    <option>Event Catering</option>
+                </select>
+                <textarea name="message" rows="4" placeholder="Additional details (date, address, etc.)"></textarea>
+                <button type="submit">Send Order</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Mummy J’s Treats • <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_LINK" target="_blank">Video
+                Demo</a></p>
+    </footer>
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>

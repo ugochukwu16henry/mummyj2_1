@@ -1,0 +1,18 @@
+[
+  {"id":1,"name":"Chocolate Fudge Cake","category":"Cakes","price":"₦18,000","desc":"Rich chocolate layers with ganache","img":"images/cake1.jpg"},
+  {"id":2,"name":"Red Velvet Cake","category":"Cakes","price":"₦20,000","desc":"Classic cream cheese frosting","img":"images/cake2.jpg"},
+  {"id":3,"name":"Vanilla Berry Cake","category":"Cakes","price":"₦17,000","desc":"Fresh berries & vanilla sponge","img":"images/cake3.jpg"},
+  {"id":4,"name":"Meat Pie (pack of 6)","category":"Pastries","price":"₦3,000","desc":"Flaky pastry with spiced beef","img":"images/meatpie.jpg"},
+  {"id":5,"name":"Doughnuts (12)","category":"Pastries","price":"₦2,400","desc":"Sugar glazed or chocolate","img":"images/doughnut.jpg"},
+  {"id":6,"name":"Chin Chin (500g)","category":"Pastries","price":"₦2,000","desc":"Crunchy & sweet","img":"images/chinchin.jpg"},
+  {"id":7,"name":"Puff Puff (20)","category":"Pastries","price":"₦2,000","desc":"Freshly fried daily","img":"images/puffpuff.jpg"},
+  {"id":8,"name":"Spring Rolls (10)","category":"Small Chops","price":"₦4,500","desc":"Veggies & chicken","img":"images/springroll.jpg"},
+  {"id":9,"name":"Samosa (10)","category":"Small Chops","price":"₦4,000","desc":"Spicy beef filling","img":"images/samosa.jpg"},
+  {"id":10,"name":"Mosa (10)","category":"Small Chops","price":"₦3,000","desc":"Plantain & fish","img":"images/mosa.jpg"},
+  {"id":11,"name":"Parfait (Large)","category":"Parfait","price":"₦5,000","desc":"Yogurt, granola, fruits","img":"images/parfait.jpg"},
+  {"id":12,"name":"Zobo Drink (1.5L)","category":"Drinks","price":"₦2,500","desc":"Hibiscus & pineapple","img":"images/zobo.jpg"},
+  {"id":13,"name":"Chapman Cocktail","category":"Drinks","price":"₦1,500","desc":"Non-alcoholic classic","img":"images/chapman.jpg"},
+  {"id":14,"name":"Jollof Rice Plate","category":"Meals","price":"₦1,800","desc":"With chicken & plantain","img":"images/jollof.jpg"},
+  {"id":15,"name":"Egusi Soup + Pounded Yam","category":"Meals","price":"₦2,500","desc":"Traditional delicacy","img":"images/egusi.jpg"},
+  {"id":16,"name":"Wedding Package (50 guests)","category":"Events","price":"₦350,000","desc":"Cake + small chops + drinks","img":"images/wedding.jpg"}
+]

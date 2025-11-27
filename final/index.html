@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Mummy J’s Treats – Fresh cakes, pastries, small chops & event services in Uyo, Nigeria">
+    <meta name="author" content="Your Name">
+    <title>Mummy J’s Treats | Freshly Baked with Love in Uyo</title>
+    <link rel="icon" href="images/favicon.ico">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Open Graph -->
+    <meta property="og:title" content="Mummy J’s Treats – Uyo">
+    <meta property="og:description" content="Best cakes, small chops & event catering in Uyo">
+    <meta property="og:image" content="images/hero.jpg">
+</head>
+
+<body>
+    <header>
+        <div class="logo">Mummy J’s Treats</div>
+        <nav>
+            <div class="hamburger">☰</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu & Services</a></li>
+                <li><a href="about.html">About & Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <img src="images/hero.jpg" alt="Delicious cake by Mummy J’s Treats" loading="lazy">
+            <div class="hero-text">
+                <h1>Freshly Baked with Love in Uyo</h1>
+                <p>Cakes • Pastries • Small Chops • Events • Delivery</p>
+            </div>
+        </section>
+
+        <h2>Featured Treats</h2>
+        <div id="menu-grid" class="grid"></div>
+
+        <section style="text-align:center;margin:4rem 0;">
+            <h2>We Deliver Anywhere in Uyo!</h2>
+            <p>Free delivery on orders above ₦15,000</p>
+            <a href="about.html#contact"
+                style="background:var(--primary);color:#fff;padding:1rem 2rem;border-radius:8px;text-decoration:none;">Order
+                Now</a>
+        </section>
+
+        <p style="text-align:center;">You are visitor number <strong id="visit-counter">0</strong></p>
+    </main>
+
+    <footer>
+        <p>© 2025 Mummy J’s Treats • <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_LINK" target="_blank">Video
+                Demo</a> • <a href="attributions.html">Attributions</a></p>
+    </footer>
+
+    <!-- Modal -->
+    <div id="item-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
