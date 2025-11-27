@@ -155,6 +155,7 @@ h2 {
     width: 100%;
     height: 200px;
     object-fit: cover;
+    loading: lazy;
 }
 
 .card h3 {
