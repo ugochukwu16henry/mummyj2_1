@@ -20,19 +20,22 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header>
-        <div class="logo">Mummy J’s Treats</div>
-        <nav>
-            <div class="hamburger">☰</div>
-            <ul>
-                <li><a href="index.html">Home</a></li>
+        <div class="logo">Mummy J's Treats</div>
+        <nav aria-label="Main navigation">
+            <button class="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav">
+                <span aria-hidden="true">☰</span>
+            </button>
+            <ul id="main-nav">
+                <li><a href="index.html" aria-current="page">Home</a></li>
                 <li><a href="menu.html">Menu & Services</a></li>
                 <li><a href="about.html">About & Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <section class="hero">
             <img src="images/hero.jpg" alt="Delicious cake by Mummy J’s Treats" loading="lazy">
             <div class="hero-text">
@@ -41,18 +44,20 @@
             </div>
         </section>
 
-        <h2>Featured Treats</h2>
-        <div id="menu-grid" class="grid"></div>
-
-        <section style="text-align:center;margin:4rem 0;">
-            <h2>We Deliver Anywhere in Uyo!</h2>
-            <p>Free delivery on orders above ₦15,000</p>
-            <a href="about.html#contact"
-                style="background:var(--primary);color:#fff;padding:1rem 2rem;border-radius:8px;text-decoration:none;">Order
-                Now</a>
+        <section class="featured-section">
+            <h2>Featured Treats</h2>
+            <div id="menu-grid" class="grid" role="region" aria-label="Featured menu items"></div>
         </section>
 
-        <p style="text-align:center;">You are visitor number <strong id="visit-counter">0</strong></p>
+        <section class="cta-section">
+            <h2>We Deliver Anywhere in Uyo!</h2>
+            <p>Free delivery on orders above ₦15,000</p>
+            <a href="about.html#contact" class="btn btn-primary">Order Now</a>
+        </section>
+
+        <section class="visitor-counter" aria-label="Visitor statistics">
+            <p>You are visitor number <strong id="visit-counter">0</strong></p>
+        </section>
     </main>
 
     <footer>
@@ -61,9 +66,9 @@
     </footer>
 
     <!-- Modal -->
-    <div id="item-modal" class="modal">
+    <div id="item-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" aria-hidden="true">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <button class="close" aria-label="Close modal">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>

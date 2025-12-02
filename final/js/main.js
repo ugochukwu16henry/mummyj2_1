@@ -1,28 +1,45 @@
 // main.js – ES Module
+// Main application entry point for Mummy J's Treats website
 import { loadMenu } from "./menu.js";
 import { openModal, closeModal } from "./modal.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Hamburger menu
+  // Hamburger menu toggle with accessibility
   const hamburger = document.querySelector(".hamburger");
   const navUL = document.querySelector("nav ul");
-  if (hamburger) {
-    hamburger.addEventListener("click", () => navUL.classList.toggle("show"));
+  
+  if (hamburger && navUL) {
+    hamburger.addEventListener("click", () => {
+      const isExpanded = navUL.classList.toggle("show");
+      hamburger.setAttribute("aria-expanded", isExpanded);
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!hamburger.contains(e.target) && !navUL.contains(e.target)) {
+        navUL.classList.remove("show");
+        hamburger.setAttribute("aria-expanded", "false");
+      }
+    });
   }
 
-  // Load menu on menu.html and index.html
+  // Load menu dynamically on pages that have menu-grid
   const menuContainer = document.getElementById("menu-grid");
-  if (menuContainer) loadMenu(menuContainer);
-
-  // Modal triggers
-  document.querySelectorAll("[data-modal]").forEach((btn) => {
-    btn.addEventListener("click", () => openModal(btn.dataset.modal));
-  });
+  if (menuContainer) {
+    loadMenu(menuContainer);
+  }
 
   // Visit counter with localStorage
-  let visits = localStorage.getItem("mjt-visits") || 0;
-  visits = parseInt(visits) + 1;
-  localStorage.setItem("mjt-visits", visits);
   const counter = document.getElementById("visit-counter");
-  if (counter) counter.textContent = visits;
+  if (counter) {
+    try {
+      let visits = localStorage.getItem("mjt-visits") || 0;
+      visits = parseInt(visits) + 1;
+      localStorage.setItem("mjt-visits", visits.toString());
+      counter.textContent = visits;
+    } catch (error) {
+      console.warn("LocalStorage not available:", error);
+      counter.textContent = "1";
+    }
+  }
 });

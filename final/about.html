@@ -19,41 +19,63 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header>
-        <div class="logo">Mummy J’s Treats</div>
-        <nav>
-            <div class="hamburger">☰</div>
-            <ul>
+        <div class="logo">Mummy J's Treats</div>
+        <nav aria-label="Main navigation">
+            <button class="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav">
+                <span aria-hidden="true">☰</span>
+            </button>
+            <ul id="main-nav">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="menu.html">Menu & Services</a></li>
-                <li><a href="about.html">About & Contact</a></li>
+                <li><a href="about.html" aria-current="page">About & Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <h1>About Us</h1>
-        <section style="text-align:center;max-width:800px;margin:0 auto;">
-            <img src="images/marylou.jpg" alt="Marylou – Owner" loading="lazy" style="border-radius:50%;width:200px;">
-            <h2>Hi, I’m Marylou (“Mummy J”)</h2>
-            <p>For over 10 years I’ve been baking and cooking with love for families in Uyo. What started in my home
+        <section class="about-section">
+            <img src="images/marylou.jpg" alt="Marylou, owner of Mummy J's Treats" loading="lazy" class="owner-photo">
+            <h2>Hi, I'm Marylou ("Mummy J")</h2>
+            <p>For over 10 years I've been baking and cooking with love for families in Uyo. What started in my home
                 kitchen is now a full business serving birthdays, weddings, and everyday cravings.</p>
-            <p>Location: No. 12 Osong Ama Road, Uyo<br>Open: Mon–Sat 8am–7pm • Sun 12pm–6pm</p>
+            <div class="business-info">
+                <p><strong>Location:</strong> No. 12 Osong Ama Road, Uyo</p>
+                <p><strong>Hours:</strong> Mon–Sat 8am–7pm • Sun 12pm–6pm</p>
+            </div>
         </section>
 
-        <section id="contact">
+        <section id="contact" class="contact-section">
             <h2>Place Your Order</h2>
-            <form action="thankyou.html" method="GET">
-                <input type="text" name="name" placeholder="Your Name" required>
-                <input type="tel" name="phone" placeholder="Phone Number" required>
-                <input type="text" name="item" placeholder="What would you like?">
-                <select name="service">
-                    <option>Pickup</option>
-                    <option>Home Delivery (+₦1000)</option>
-                    <option>Event Catering</option>
-                </select>
-                <textarea name="message" rows="4" placeholder="Additional details (date, address, etc.)"></textarea>
-                <button type="submit">Send Order</button>
+            <form action="thankyou.html" method="GET" novalidate>
+                <div class="form-group">
+                    <label for="name">Your Name <span class="required">*</span></label>
+                    <input type="text" id="name" name="name" placeholder="Enter your full name" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number <span class="required">*</span></label>
+                    <input type="tel" id="phone" name="phone" placeholder="e.g., 08012345678" required aria-required="true">
+                </div>
+                <div class="form-group">
+                    <label for="item">What would you like?</label>
+                    <input type="text" id="item" name="item" placeholder="e.g., Chocolate Fudge Cake">
+                </div>
+                <div class="form-group">
+                    <label for="service">Service Type</label>
+                    <select id="service" name="service" required>
+                        <option value="">Select a service</option>
+                        <option value="pickup">Pickup</option>
+                        <option value="delivery">Home Delivery (+₦1000)</option>
+                        <option value="catering">Event Catering</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Additional Details</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Date, time, address, special requests, etc."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Send Order</button>
             </form>
         </section>
     </main>

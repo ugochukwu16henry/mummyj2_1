@@ -19,21 +19,24 @@
 </head>
 
 <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
     <header>
-        <div class="logo">Mummy J’s Treats</div>
-        <nav>
-            <div class="hamburger">☰</div>
-            <ul>
+        <div class="logo">Mummy J's Treats</div>
+        <nav aria-label="Main navigation">
+            <button class="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav">
+                <span aria-hidden="true">☰</span>
+            </button>
+            <ul id="main-nav">
                 <li><a href="index.html">Home</a></li>
-                <li><a href="menu.html">Menu & Services</a></li>
+                <li><a href="menu.html" aria-current="page">Menu & Services</a></li>
                 <li><a href="about.html">About & Contact</a></li>
             </ul>
         </nav>
     </header>
 
-    <main>
+    <main id="main-content">
         <h1>Full Menu & Services</h1>
-        <div id="menu-grid" class="grid"></div>
+        <div id="menu-grid" class="grid" role="region" aria-label="Complete menu items"></div>
     </main>
 
     <footer>
@@ -41,9 +44,9 @@
                 Demo</a> • <a href="attributions.html">Attributions</a></p>
     </footer>
 
-    <div id="item-modal" class="modal">
+    <div id="item-modal" class="modal" role="dialog" aria-labelledby="modal-title" aria-modal="true" aria-hidden="true">
         <div class="modal-content">
-            <span class="close">&times;</span>
+            <button class="close" aria-label="Close modal">&times;</button>
             <div id="modal-body"></div>
         </div>
     </div>
