@@ -12,19 +12,50 @@ export async function loadMenu(container) {
   container.innerHTML = '<p class="loading">Loading menu...</p>';
 
   try {
-    // Fetch JSON file - path is relative to the HTML document's location
-    // When menu.html is at /menu.html, data/Menu.json resolves to /data/Menu.json
-    const res = await fetch("data/Menu.json");
+    // Fetch JSON file - try multiple path formats for maximum compatibility
+    const currentPath = window.location.pathname;
+    const basePath = currentPath.substring(0, currentPath.lastIndexOf('/') + 1);
     
-    if (!res.ok) {
-      const errorMsg = `Failed to load menu: ${res.status} ${res.statusText}`;
+    // Try different path formats
+    const pathsToTry = [
+      basePath + 'data/Menu.json',           // Relative to current directory
+      '/wdd231/final/data/Menu.json',        // Absolute from repo root
+      './data/Menu.json',                    // Simple relative
+      'data/Menu.json'                       // Relative without ./
+    ];
+    
+    let res;
+    let lastError;
+    let successfulPath;
+    
+    for (const path of pathsToTry) {
+      try {
+        const fullUrl = path.startsWith('http') ? path : new URL(path, window.location.origin).href;
+        console.log(`Trying path: ${path} -> ${fullUrl}`);
+        res = await fetch(fullUrl);
+        
+        if (res.ok) {
+          successfulPath = fullUrl;
+          break;
+        }
+      } catch (err) {
+        lastError = err;
+        continue;
+      }
+    }
+    
+    if (!res || !res.ok) {
+      const errorMsg = `Failed to load menu: ${res ? res.status + ' ' + res.statusText : 'All paths failed'}`;
       console.error("Fetch Error Details:");
       console.error("- Current URL:", window.location.href);
-      console.error("- Attempted path: data/Menu.json");
-      console.error("- Full resolved URL:", new URL("data/Menu.json", window.location.href).href);
-      console.error("- Response status:", res.status, res.statusText);
+      console.error("- Current pathname:", currentPath);
+      console.error("- Base path:", basePath);
+      console.error("- Tried paths:", pathsToTry);
+      if (lastError) console.error("- Last error:", lastError);
       throw new Error(errorMsg);
     }
+    
+    console.log(`Successfully loaded menu from: ${successfulPath}`);
     
     const items = await res.json();
 
