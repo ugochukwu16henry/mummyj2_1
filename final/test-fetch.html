@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Fetch</title>
+</head>
+<body>
+    <h1>Testing Menu.json Fetch</h1>
+    <div id="result"></div>
+    <script>
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing fetch...</p>';
+            
+            console.log('Current URL:', window.location.href);
+            console.log('Protocol:', window.location.protocol);
+            
+            const paths = [
+                'data/Menu.json',
+                './data/Menu.json',
+                '/data/Menu.json'
+            ];
+            
+            for (const path of paths) {
+                try {
+                    console.log(`Trying: ${path}`);
+                    const fullUrl = new URL(path, window.location.href).href;
+                    console.log(`Full URL: ${fullUrl}`);
+                    
+                    const res = await fetch(path);
+                    console.log(`Status: ${res.status}`);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        resultDiv.innerHTML = `
+                            <p style="color: green;">✅ SUCCESS!</p>
+                            <p>Working path: <strong>${path}</strong></p>
+                            <p>Loaded ${data.length} items</p>
+                            <pre>${JSON.stringify(data.slice(0, 2), null, 2)}</pre>
+                        `;
+                        return;
+                    } else {
+                        console.error(`Failed: ${res.status} ${res.statusText}`);
+                    }
+                } catch (err) {
+                    console.error(`Error with ${path}:`, err);
+                }
+            }
+            
+            resultDiv.innerHTML = `
+                <p style="color: red;">❌ All paths failed</p>
+                <p><strong>Important:</strong> You must run a web server!</p>
+                <p>Current protocol: ${window.location.protocol}</p>
+                <p>If you see "file://", that's the problem. Use a web server.</p>
+            `;
+        }
+        
+        testFetch();
+    </script>
+</body>
+</html>
+
