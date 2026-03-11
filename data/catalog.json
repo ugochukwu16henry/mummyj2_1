@@ -150,7 +150,7 @@
       "description": "Veggies and chicken",
       "image": "images/springroll.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
@@ -166,7 +166,7 @@
       "description": "Spicy beef filling",
       "image": "images/samosa.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
@@ -182,7 +182,7 @@
       "description": "Plantain and fish",
       "image": "images/mosa.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
@@ -230,7 +230,7 @@
       "description": "Non-alcoholic classic",
       "image": "images/chapman.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
@@ -246,7 +246,7 @@
       "description": "With chicken and plantain",
       "image": "images/jollof.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
@@ -262,7 +262,7 @@
       "description": "Traditional delicacy",
       "image": "images/egusi.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
