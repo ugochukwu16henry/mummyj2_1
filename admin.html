@@ -85,14 +85,34 @@
           <h2>Category Manager</h2>
           <form id="add-category-form" class="inline-form">
             <input id="new-category" type="text" placeholder="New category" required>
+            <input id="new-category-image" type="file" accept="image/*" capture="environment">
             <button class="btn ghost" type="submit">Add</button>
           </form>
+          <small>Optional: upload category image from phone or laptop.</small>
           <div id="category-list" class="category-list"></div>
         </article>
 
         <article class="panel json-panel">
           <h2>JSON Preview</h2>
           <pre id="json-preview"></pre>
+        </article>
+
+        <article class="panel account-panel">
+          <h2>Admin Account</h2>
+          <p id="account-email" class="account-email">Signed in as: <span>admin@mummyj2treats.com</span></p>
+          <form id="account-form" class="account-form">
+            <label>Current Password
+              <input type="password" id="current-password" autocomplete="current-password" required>
+            </label>
+            <label>New Email
+              <input type="email" id="new-email" autocomplete="email" required>
+            </label>
+            <label>New Password
+              <input type="password" id="new-password" autocomplete="new-password" required>
+            </label>
+            <button type="submit" class="btn ghost">Update Login</button>
+            <p id="account-message" class="account-message" aria-live="polite"></p>
+          </form>
         </article>
       </section>
     </section>

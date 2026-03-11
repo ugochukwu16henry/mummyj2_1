@@ -162,6 +162,37 @@ textarea {
   margin-top: 1rem;
 }
 
+.account-panel {
+  min-height: 260px;
+}
+
+.account-email {
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+}
+
+.account-form label input {
+  margin-bottom: 0.4rem;
+}
+
+.account-form .btn {
+  margin-top: 0.2rem;
+}
+
+.account-message {
+  min-height: 1.2rem;
+  font-size: 0.8rem;
+  margin-top: 0.4rem;
+}
+
+.account-message.ok {
+  color: var(--ok);
+}
+
+.account-message.error {
+  color: var(--danger);
+}
+
 .table-wrap {
   overflow: auto;
 }
@@ -212,13 +243,51 @@ td img {
 
 .category-row {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 0.5rem;
-  align-items: center;
+  align-items: start;
 }
 
 .category-row input {
   margin: 0;
+}
+
+.category-main {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.category-media-row {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.category-thumb {
+  width: 58px;
+  height: 58px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+}
+
+.category-thumb.placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  color: var(--muted);
+  background: #0f141e;
+}
+
+#product-image-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  margin-bottom: 0.6rem;
 }
 
 pre {

@@ -16,7 +16,7 @@ const JSON_SCHEMA = [
 
 const state = {
   token: localStorage.getItem(TOKEN_KEY) || "",
-  catalog: { categories: [], products: [] },
+  catalog: { categories: [], products: [], category_images: {} },
   filteredProducts: [],
   editingId: null,
   stockFilter: "all"
@@ -40,6 +40,22 @@ const commitBtn = document.getElementById("commit-btn");
 const logoutBtn = document.getElementById("logout-btn");
 const searchInput = document.getElementById("search-input");
 const stockFilterButtons = Array.from(document.querySelectorAll("button[data-stock-filter]"));
+const accountEmail = document.getElementById("account-email");
+const accountForm = document.getElementById("account-form");
+const accountMessage = document.getElementById("account-message");
+
+async function fileToDataUrl(file) {
+  if (!file) {
+    return "";
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read image file"));
+    reader.readAsDataURL(file);
+  });
+}
 
 function showSyncing(show, message = "Syncing catalog.json...") {
   syncBar.textContent = message;
@@ -110,7 +126,13 @@ function renderSchemaForm() {
         <input type="${field.type}" name="${field.key}" placeholder="${field.placeholder}" ${field.required ? "required" : ""}>
       </label>
     `;
-  }).join("") + '<button class="btn primary" type="submit">Add Product</button>';
+  }).join("") + `
+    <label>Upload Product Image (optional)
+      <input type="file" id="product-image-upload" accept="image/*" capture="environment">
+    </label>
+    <img id="product-image-preview" alt="Product preview" hidden>
+    <button class="btn primary" type="submit">Add Product</button>
+  `;
 }
 
 function getStockClass(stock) {
@@ -158,7 +180,15 @@ function renderProductsTable() {
 function renderCategories() {
   categoryList.innerHTML = state.catalog.categories.map((category) => `
     <div class="category-row">
-      <input type="text" value="${category}" data-old-category="${category}">
+      <div class="category-main">
+        <input type="text" value="${category}" data-old-category="${category}">
+        <div class="category-media-row">
+          ${state.catalog.category_images?.[category]
+            ? `<img src="${state.catalog.category_images[category]}" alt="${category} image" class="category-thumb">`
+            : "<span class=\"category-thumb placeholder\">No image</span>"}
+          <input type="file" accept="image/*" capture="environment" data-category-image-upload="${category}">
+        </div>
+      </div>
       <div class="category-actions">
         <button class="btn ghost mini" data-rename-category="${category}">Rename</button>
         <button class="btn mini danger" data-delete-category="${category}">Delete</button>
@@ -231,11 +261,30 @@ async function login(email, password) {
   localStorage.setItem(TOKEN_KEY, payload.token);
 }
 
+async function loadAccount() {
+  if (!accountEmail) {
+    return;
+  }
+
+  try {
+    const payload = await apiFetch("/auth/me");
+    const span = accountEmail.querySelector("span");
+    if (span && payload?.email) {
+      span.textContent = payload.email;
+    }
+  } catch {
+    // ignore – account section is optional
+  }
+}
+
 async function loadCatalog() {
   const payload = await apiFetch("/catalog");
   state.catalog = {
     categories: Array.isArray(payload.categories) ? payload.categories : [],
-    products: Array.isArray(payload.products) ? payload.products.map(normalizeProduct) : []
+    products: Array.isArray(payload.products) ? payload.products.map(normalizeProduct) : [],
+    category_images: payload.category_images && typeof payload.category_images === "object"
+      ? payload.category_images
+      : {}
   };
 
   state.filteredProducts = [...state.catalog.products];
@@ -299,7 +348,7 @@ loginForm.addEventListener("submit", async (event) => {
   }
 });
 
-productForm.addEventListener("submit", (event) => {
+productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const formData = new FormData(productForm);
   const product = {};
@@ -323,12 +372,62 @@ productForm.addEventListener("submit", (event) => {
     }
   });
 
+  try {
+    const uploadedImage = document.getElementById("product-image-upload")?.files?.[0] || null;
+    if (uploadedImage) {
+      product.image = await fileToDataUrl(uploadedImage);
+    }
+  } catch (error) {
+    showSyncing(true, `Image upload failed: ${error.message}`);
+    setTimeout(() => showSyncing(false), 1800);
+    return;
+  }
+
+  if (!product.image) {
+    showSyncing(true, "Set an image path or upload an image before adding product.");
+    setTimeout(() => showSyncing(false), 1800);
+    return;
+  }
+
   product.last_updated = new Date().toISOString().slice(0, 10);
 
   state.catalog.products.unshift(normalizeProduct(product));
   applyFilter();
   renderJsonPreview();
   productForm.reset();
+
+  const preview = document.getElementById("product-image-preview");
+  if (preview) {
+    preview.hidden = true;
+    preview.removeAttribute("src");
+  }
+});
+
+productForm.addEventListener("change", async (event) => {
+  const fileInput = event.target.closest("#product-image-upload");
+  if (!fileInput) {
+    return;
+  }
+
+  const preview = document.getElementById("product-image-preview");
+  const selected = fileInput.files?.[0] || null;
+  if (!preview) {
+    return;
+  }
+
+  if (!selected) {
+    preview.hidden = true;
+    preview.removeAttribute("src");
+    return;
+  }
+
+  try {
+    preview.src = await fileToDataUrl(selected);
+    preview.hidden = false;
+  } catch (_error) {
+    preview.hidden = true;
+    preview.removeAttribute("src");
+  }
 });
 
 productsTable.addEventListener("click", (event) => {
@@ -355,18 +454,63 @@ productsTable.addEventListener("click", (event) => {
   }
 });
 
-addCategoryForm.addEventListener("submit", (event) => {
+addCategoryForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const input = document.getElementById("new-category");
+  const imageInput = document.getElementById("new-category-image");
   const value = input.value.trim();
   if (!value || state.catalog.categories.includes(value)) {
     return;
   }
 
   state.catalog.categories.push(value);
+
+  try {
+    const uploaded = imageInput?.files?.[0] || null;
+    if (uploaded) {
+      if (!state.catalog.category_images || typeof state.catalog.category_images !== "object") {
+        state.catalog.category_images = {};
+      }
+      state.catalog.category_images[value] = await fileToDataUrl(uploaded);
+    }
+  } catch (error) {
+    showSyncing(true, `Category image upload failed: ${error.message}`);
+    setTimeout(() => showSyncing(false), 1800);
+  }
+
   renderCategories();
   renderJsonPreview();
   input.value = "";
+  if (imageInput) {
+    imageInput.value = "";
+  }
+});
+
+categoryList.addEventListener("change", async (event) => {
+  const fileInput = event.target.closest("input[data-category-image-upload]");
+  if (!fileInput) {
+    return;
+  }
+
+  const category = fileInput.dataset.categoryImageUpload;
+  const selected = fileInput.files?.[0] || null;
+  if (!category || !selected) {
+    return;
+  }
+
+  try {
+    if (!state.catalog.category_images || typeof state.catalog.category_images !== "object") {
+      state.catalog.category_images = {};
+    }
+    state.catalog.category_images[category] = await fileToDataUrl(selected);
+    renderCategories();
+    renderJsonPreview();
+    showSyncing(true, `Updated image for ${category}. Click Commit Changes to publish.`);
+    setTimeout(() => showSyncing(false), 1500);
+  } catch (error) {
+    showSyncing(true, `Image update failed: ${error.message}`);
+    setTimeout(() => showSyncing(false), 1800);
+  }
 });
 
 categoryList.addEventListener("click", (event) => {
@@ -393,6 +537,9 @@ categoryList.addEventListener("click", (event) => {
     }
 
     state.catalog.categories = state.catalog.categories.filter((value) => value !== category);
+    if (state.catalog.category_images && typeof state.catalog.category_images === "object") {
+      delete state.catalog.category_images[category];
+    }
     applyFilter();
     renderCategories();
     renderJsonPreview();
@@ -417,7 +564,20 @@ categoryList.addEventListener("click", (event) => {
     return;
   }
 
+  if (nextCategory !== oldCategory && state.catalog.categories.includes(nextCategory)) {
+    return;
+  }
+
   state.catalog.categories = state.catalog.categories.map((value) => (value === oldCategory ? nextCategory : value));
+  if (state.catalog.category_images && typeof state.catalog.category_images === "object") {
+    const currentImage = state.catalog.category_images[oldCategory];
+    if (currentImage) {
+      state.catalog.category_images[nextCategory] = currentImage;
+    }
+    if (nextCategory !== oldCategory) {
+      delete state.catalog.category_images[oldCategory];
+    }
+  }
   state.catalog.products = state.catalog.products.map((product) => {
     if (product.category === oldCategory) {
       return { ...product, category: nextCategory, last_updated: new Date().toISOString().slice(0, 10) };
@@ -500,6 +660,47 @@ logoutBtn.addEventListener("click", () => {
   showLogin();
 });
 
+if (accountForm) {
+  accountForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!accountMessage) {
+      return;
+    }
+
+    accountMessage.textContent = "";
+    accountMessage.classList.remove("ok", "error");
+
+    const currentPassword = document.getElementById("current-password").value;
+    const newEmail = document.getElementById("new-email").value.trim();
+    const newPassword = document.getElementById("new-password").value;
+
+    if (!currentPassword || !newEmail || !newPassword) {
+      accountMessage.textContent = "All fields are required.";
+      accountMessage.classList.add("error");
+      return;
+    }
+
+    try {
+      const payload = await apiFetch("/auth/change-credentials", {
+        method: "POST",
+        body: JSON.stringify({ currentPassword, newEmail, newPassword })
+      });
+
+      const span = accountEmail?.querySelector("span");
+      if (span && payload?.email) {
+        span.textContent = payload.email;
+      }
+
+      accountMessage.textContent = "Login updated. Use the new email and password next time you sign in.";
+      accountMessage.classList.add("ok");
+      accountForm.reset();
+    } catch (error) {
+      accountMessage.textContent = error.message || "Could not update login.";
+      accountMessage.classList.add("error");
+    }
+  });
+}
+
 searchInput.addEventListener("input", applyFilter);
 
 stockFilterButtons.forEach((button) => {
@@ -522,6 +723,7 @@ renderSchemaForm();
   try {
     showDashboard();
     await loadCatalog();
+    await loadAccount();
   } catch (_error) {
     localStorage.removeItem(TOKEN_KEY);
     state.token = "";

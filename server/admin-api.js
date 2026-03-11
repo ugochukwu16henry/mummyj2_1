@@ -17,13 +17,14 @@ const GITHUB_CATALOG_PATH = process.env.GITHUB_CATALOG_PATH || "data/catalog.jso
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CATALOG_PATH = path.resolve(__dirname, "../data/catalog.json");
+const AUTH_CONFIG_PATH = path.resolve(__dirname, "../data/admin-auth.json");
 
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
 function sanitizeCatalog(data) {
   if (!data || typeof data !== "object") {
-    return { categories: [], products: [] };
+    return { categories: [], products: [], category_images: {} };
   }
 
   return {
@@ -32,7 +33,14 @@ function sanitizeCatalog(data) {
       : [],
     products: Array.isArray(data.products)
       ? data.products.filter((item) => item && typeof item === "object")
-      : []
+      : [],
+    category_images: data.category_images && typeof data.category_images === "object"
+      ? Object.fromEntries(
+        Object.entries(data.category_images).filter(
+          ([key, value]) => typeof key === "string" && typeof value === "string"
+        )
+      )
+      : {}
   };
 }
 
@@ -160,6 +168,36 @@ async function commitCatalogToGithub(catalog, actorEmail = "admin@mummyj2treats.
   };
 }
 
+async function readAdminAuth() {
+  try {
+    const raw = await fs.readFile(AUTH_CONFIG_PATH, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Invalid admin auth file");
+    }
+    return {
+      email: String(parsed.email || "admin@mummyj2treats.com").trim(),
+      password: String(parsed.password || "admin123")
+    };
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return null;
+    }
+    console.warn("Failed to read admin auth config:", error.message);
+    return null;
+  }
+}
+
+async function writeAdminAuth(nextAuth) {
+  const safeAuth = {
+    email: String(nextAuth.email || "admin@mummyj2treats.com").trim(),
+    password: String(nextAuth.password || "admin123")
+  };
+  const output = `${JSON.stringify(safeAuth, null, 2)}\n`;
+  await fs.writeFile(AUTH_CONFIG_PATH, output, "utf-8");
+  return safeAuth;
+}
+
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization || "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : "";
@@ -181,10 +219,14 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
-app.post("/api/auth/login", (req, res) => {
+app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body || {};
 
-  if (email !== "admin@mummyj2treats.com" || password !== "admin123") {
+  const stored = await readAdminAuth();
+  const expectedEmail = stored?.email || "admin@mummyj2treats.com";
+  const expectedPassword = stored?.password || "admin123";
+
+  if (email !== expectedEmail || password !== expectedPassword) {
     return res.status(401).json({ error: "Invalid admin credentials" });
   }
 
@@ -192,13 +234,44 @@ app.post("/api/auth/login", (req, res) => {
     {
       sub: "admin-user",
       role: "admin",
-      email
+      email: expectedEmail
     },
     JWT_SECRET,
     { expiresIn: "8h" }
   );
 
-  return res.json({ token, user: { email, role: "admin" } });
+  return res.json({ token, user: { email: expectedEmail, role: "admin" } });
+});
+
+app.get("/api/auth/me", authMiddleware, async (req, res) => {
+  const stored = await readAdminAuth();
+  const email = stored?.email || "admin@mummyj2treats.com";
+  res.json({ email, role: "admin" });
+});
+
+app.post("/api/auth/change-credentials", authMiddleware, async (req, res) => {
+  const { currentPassword, newEmail, newPassword } = req.body || {};
+
+  if (!currentPassword || !newEmail || !newPassword) {
+    return res.status(400).json({ error: "currentPassword, newEmail, and newPassword are required" });
+  }
+
+  const stored = await readAdminAuth();
+  const expectedPassword = stored?.password || "admin123";
+
+  if (String(currentPassword) !== String(expectedPassword)) {
+    return res.status(401).json({ error: "Current password is incorrect" });
+  }
+
+  const nextAuth = await writeAdminAuth({
+    email: newEmail,
+    password: newPassword
+  });
+
+  return res.json({
+    ok: true,
+    email: nextAuth.email
+  });
 });
 
 app.get("/api/products", authMiddleware, async (_req, res) => {
