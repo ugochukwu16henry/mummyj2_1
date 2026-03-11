@@ -337,7 +337,7 @@ function setupTestimonialForm() {
     const videoFile = videoInput?.files?.[0] || null;
 
     const imageError = validateFileSize(imageFile, 3 * 1024 * 1024);
-    const videoError = validateFileSize(videoFile, 2 * 1024 * 1024);
+    const videoError = validateFileSize(videoFile, 3 * 1024 * 1024);
     if (imageError || videoError) {
       status.textContent = imageError || videoError;
       return;
