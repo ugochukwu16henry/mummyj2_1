@@ -5,6 +5,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import jwt from "jsonwebtoken";
 import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
@@ -242,10 +243,18 @@ async function writeAdminAuth(nextAuth) {
 }
 
 function ensureS3Config() {
+  if (!S3_ACCESS_KEY_ID || !S3_SECRET_ACCESS_KEY || !S3_BUCKET_NAME) {
+    loadEnv();
+  }
+
+  const accessKey = process.env.S3_ACCESS_KEY_ID || process.env.AWS_ACCESS_KEY_ID || S3_ACCESS_KEY_ID;
+  const secretKey = process.env.S3_SECRET_ACCESS_KEY || process.env.AWS_SECRET_ACCESS_KEY || S3_SECRET_ACCESS_KEY;
+  const bucket = process.env.S3_BUCKET_NAME || process.env.AWS_BUCKET_NAME || process.env.BUCKET_NAME || S3_BUCKET_NAME;
+
   const missing = [];
-  if (!S3_ACCESS_KEY_ID) missing.push("S3_ACCESS_KEY_ID/AWS_ACCESS_KEY_ID");
-  if (!S3_SECRET_ACCESS_KEY) missing.push("S3_SECRET_ACCESS_KEY/AWS_SECRET_ACCESS_KEY");
-  if (!S3_BUCKET_NAME) missing.push("S3_BUCKET_NAME/AWS_BUCKET_NAME/BUCKET_NAME");
+  if (!accessKey) missing.push("S3_ACCESS_KEY_ID/AWS_ACCESS_KEY_ID");
+  if (!secretKey) missing.push("S3_SECRET_ACCESS_KEY/AWS_SECRET_ACCESS_KEY");
+  if (!bucket) missing.push("S3_BUCKET_NAME/AWS_BUCKET_NAME/BUCKET_NAME");
 
   if (missing.length) {
     throw new Error(`S3 is not configured. Missing: ${missing.join(", ")}`);
