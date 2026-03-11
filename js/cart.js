@@ -70,15 +70,26 @@ function normalizeProducts(rawPayload) {
       ? rawPayload.products
       : [];
 
-  return sourceItems.map((item, index) => ({
-    id: item.id ?? `item-${index + 1}`,
-    name: item.name || "Untitled Product",
-    category: item.category || "General",
-    price: formatPrice(item.price),
-    desc: item.desc || item.description || "",
-    img: item.img || item.image || "images/placeholder.png",
-    orderOnly: Boolean(item.order_only)
-  }));
+  return sourceItems.map((item, index) => {
+    const stock = Number(item.stock || 0);
+    const outOfStock = Boolean(item.out_of_stock) || stock <= 0;
+    const lowStock = !outOfStock && stock > 0 && stock <= 10;
+    const stockRank = outOfStock ? 2 : lowStock ? 1 : 0;
+
+    return {
+      id: item.id ?? `item-${index + 1}`,
+      name: item.name || "Untitled Product",
+      category: item.category || "General",
+      price: formatPrice(item.price),
+      desc: item.desc || item.description || "",
+      img: item.img || item.image || "images/placeholder.png",
+      orderOnly: Boolean(item.order_only),
+      stock,
+      outOfStock,
+      lowStock,
+      stockRank
+    };
+  });
 }
 
 function showToast(message, withUndo = false, onUndo = null) {
@@ -175,12 +186,22 @@ function updateSummary(items) {
 function renderCartItems() {
   const state = getCartState();
   const { items, saved } = state;
+  const sortedItems = items
+    .slice()
+    .sort((a, b) => {
+      const rankA = typeof a.stock_rank === "number" ? a.stock_rank : 0;
+      const rankB = typeof b.stock_rank === "number" ? b.stock_rank : 0;
+      if (rankA !== rankB) {
+        return rankA - rankB;
+      }
+      return String(a.name || "").localeCompare(String(b.name || ""));
+    });
 
   if (!cartList) {
     return;
   }
 
-  if (items.length === 0) {
+  if (sortedItems.length === 0) {
     cartList.innerHTML = `
       <article class="cart-empty">
         <h2>Your cart is empty</h2>
@@ -189,7 +210,7 @@ function renderCartItems() {
       </article>
     `;
   } else {
-    cartList.innerHTML = items.map((item) => `
+    cartList.innerHTML = sortedItems.map((item) => `
       <article class="cart-item" data-id="${item.id}">
         <div class="cart-item-shell">
           <img src="${item.img}" alt="${item.name}">
@@ -234,7 +255,7 @@ function renderCartItems() {
       : "<p class=\"saved-empty\">No saved items yet.</p>";
   }
 
-  updateSummary(items);
+  updateSummary(sortedItems);
   updateCartBadge();
 }
 

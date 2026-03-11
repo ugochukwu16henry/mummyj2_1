@@ -73,6 +73,10 @@ function upsertItem(list, incoming) {
 export function addItemToCart(item) {
   const state = getCartState();
   const lineId = String(item.cart_line_id || item.id);
+  const stock = Number(item.stock || 0);
+  const outOfStock = Boolean(item.out_of_stock || item.outOfStock) || stock <= 0;
+  const lowStock = !outOfStock && stock > 0 && stock <= 10;
+  const stockRank = outOfStock ? 2 : lowStock ? 1 : 0;
   const prepared = {
     id: lineId,
     product_id: String(item.id),
@@ -82,7 +86,11 @@ export function addItemToCart(item) {
     price: item.price,
     qty: Number(item.qty) > 0 ? Number(item.qty) : 1,
     order_request: item.order_request || null,
-    order_only: Boolean(item.order_only || item.orderOnly)
+    order_only: Boolean(item.order_only || item.orderOnly),
+    stock,
+    out_of_stock: outOfStock,
+    low_stock: lowStock,
+    stock_rank: stockRank
   };
 
   state.items = upsertItem(state.items, prepared);
