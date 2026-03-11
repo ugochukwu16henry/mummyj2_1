@@ -11,15 +11,5 @@
       "approvedAt": "2026-03-11T14:08:33.565Z"
     }
   ],
-  "posts": [
-    {
-      "id": "p-1773239634426",
-      "title": "test",
-      "body": "testing",
-      "imageUrl": "",
-      "videoUrl": "",
-      "createdAt": "2026-03-11T14:33:54.426Z",
-      "published": true
-    }
-  ]
+  "posts": []
 }
