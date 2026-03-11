@@ -99,7 +99,7 @@ nav a:focus {
 }
 
 /* Mobile menu */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .hamburger {
         display: block;
     }
@@ -1087,7 +1087,7 @@ select:invalid:not(:placeholder-shown) {
 }
 
 /* Responsive improvements */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     body.cart-screen header,
     body.cart-screen footer {
         display: none;
@@ -1140,9 +1140,33 @@ select:invalid:not(:placeholder-shown) {
         flex-direction: column;
     }
 
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .card {
+        text-align: left;
+    }
+
+    .card img {
+        height: 190px;
+    }
+
+    .card > div {
+        padding: 1rem;
+    }
+
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.6rem;
+    }
+
     .view-details,
     .add-to-cart {
         width: 100%;
+        min-height: 44px;
     }
 
     .cart-layout {
