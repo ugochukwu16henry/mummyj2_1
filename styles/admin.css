@@ -202,8 +202,7 @@ textarea {
   margin: 0.35rem 0 0.65rem;
 }
 
-#blog-image-clear,
-#blog-video-clear {
+#blog-image-clear {
   margin: 0 0 0.45rem;
   width: fit-content;
 }

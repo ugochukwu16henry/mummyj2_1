@@ -13,7 +13,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { title, body, imageUrl, videoUrl } = req.body || {};
+    const { title, body, imageUrl } = req.body || {};
     if (!title || !body) {
       return res.status(400).json({ error: "Title and body are required" });
     }
@@ -24,7 +24,6 @@ export default async function handler(req, res) {
       title: String(title).trim(),
       body: String(body).trim(),
       imageUrl: imageUrl ? String(imageUrl).trim() : "",
-      videoUrl: videoUrl ? String(videoUrl).trim() : "",
       createdAt: new Date().toISOString(),
       published: true
     };

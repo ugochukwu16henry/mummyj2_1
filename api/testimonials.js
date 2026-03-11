@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { name, message, imageUrl, videoUrl } = req.body || {};
+    const { name, message, imageUrl } = req.body || {};
 
     if (!name || !message) {
       return res.status(400).json({ error: "Name and message are required" });
@@ -19,7 +19,6 @@ export default async function handler(req, res) {
       name: String(name).trim(),
       message: String(message).trim(),
       imageUrl: imageUrl ? String(imageUrl).trim() : "",
-      videoUrl: videoUrl ? String(videoUrl).trim() : "",
       createdAt: new Date().toISOString(),
       approved: false
     };
