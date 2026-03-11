@@ -53,6 +53,8 @@ const blogImageFileInput = document.getElementById("blog-image-file");
 const blogVideoFileInput = document.getElementById("blog-video-file");
 const blogImagePreview = document.getElementById("blog-image-preview");
 const blogVideoPreview = document.getElementById("blog-video-preview");
+const blogImageClearBtn = document.getElementById("blog-image-clear");
+const blogVideoClearBtn = document.getElementById("blog-video-clear");
 const blogPostsAdmin = document.getElementById("blog-posts-admin");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
@@ -172,16 +174,40 @@ function setBlogMediaPreview(input, preview, type = "image") {
     if (!file) {
       preview.hidden = true;
       preview.removeAttribute("src");
+      if (type === "image" && blogImageClearBtn) {
+        blogImageClearBtn.hidden = true;
+      }
+      if (type === "video" && blogVideoClearBtn) {
+        blogVideoClearBtn.hidden = true;
+      }
       return;
     }
 
     const objectUrl = URL.createObjectURL(file);
     preview.src = objectUrl;
     preview.hidden = false;
+    if (type === "image" && blogImageClearBtn) {
+      blogImageClearBtn.hidden = false;
+    }
+    if (type === "video" && blogVideoClearBtn) {
+      blogVideoClearBtn.hidden = false;
+    }
     if (type === "video") {
       preview.load();
     }
   });
+}
+
+function clearBlogMedia(input, preview, clearBtn) {
+  if (!input || !preview) {
+    return;
+  }
+  input.value = "";
+  preview.hidden = true;
+  preview.removeAttribute("src");
+  if (clearBtn) {
+    clearBtn.hidden = true;
+  }
 }
 
 async function optimizeImageFile(file, profile = "product") {
@@ -1135,6 +1161,14 @@ if (blogForm && blogMessage) {
   setBlogMediaPreview(blogImageFileInput, blogImagePreview, "image");
   setBlogMediaPreview(blogVideoFileInput, blogVideoPreview, "video");
 
+  blogImageClearBtn?.addEventListener("click", () => {
+    clearBlogMedia(blogImageFileInput, blogImagePreview, blogImageClearBtn);
+  });
+
+  blogVideoClearBtn?.addEventListener("click", () => {
+    clearBlogMedia(blogVideoFileInput, blogVideoPreview, blogVideoClearBtn);
+  });
+
   blogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     blogMessage.textContent = "";
@@ -1200,6 +1234,12 @@ if (blogForm && blogMessage) {
       if (blogVideoPreview) {
         blogVideoPreview.hidden = true;
         blogVideoPreview.removeAttribute("src");
+      }
+      if (blogImageClearBtn) {
+        blogImageClearBtn.hidden = true;
+      }
+      if (blogVideoClearBtn) {
+        blogVideoClearBtn.hidden = true;
       }
       blogMessage.textContent = "Post published. It now appears on the stories page.";
       blogMessage.classList.remove("error");
