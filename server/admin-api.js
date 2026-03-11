@@ -362,6 +362,18 @@ app.post("/api/admin/testimonials/:id/approve", authMiddleware, async (req, res)
   res.json({ ok: true, testimonial: content.testimonials[index] });
 });
 
+app.delete("/api/admin/testimonials/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const content = await readContent();
+  const next = content.testimonials.filter((item) => item.id !== id);
+  if (next.length === content.testimonials.length) {
+    return res.status(404).json({ error: "Testimonial not found" });
+  }
+  content.testimonials = next;
+  await writeContent(content);
+  res.json({ ok: true });
+});
+
 app.post("/api/admin/posts", authMiddleware, async (req, res) => {
   const { title, body, imageUrl, videoUrl } = req.body || {};
 
@@ -384,6 +396,18 @@ app.post("/api/admin/posts", authMiddleware, async (req, res) => {
   await writeContent(content);
 
   res.status(201).json({ ok: true, post });
+});
+
+app.delete("/api/admin/posts/:id", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const content = await readContent();
+  const next = content.posts.filter((post) => post.id !== id);
+  if (next.length === content.posts.length) {
+    return res.status(404).json({ error: "Post not found" });
+  }
+  content.posts = next;
+  await writeContent(content);
+  res.json({ ok: true });
 });
 
 app.get("/api/products", authMiddleware, async (_req, res) => {

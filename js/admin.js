@@ -45,8 +45,10 @@ const accountEmail = document.getElementById("account-email");
 const accountForm = document.getElementById("account-form");
 const accountMessage = document.getElementById("account-message");
 const pendingTestimonials = document.getElementById("pending-testimonials");
+const allTestimonials = document.getElementById("all-testimonials");
 const blogForm = document.getElementById("blog-form");
 const blogMessage = document.getElementById("blog-message");
+const blogPostsAdmin = document.getElementById("blog-posts-admin");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
 
@@ -417,32 +419,74 @@ async function loadAccount() {
 }
 
 async function loadContent() {
-  if (!pendingTestimonials) {
+  if (!pendingTestimonials && !allTestimonials && !blogPostsAdmin) {
     return;
   }
 
   try {
     const payload = await apiFetch("/admin/content");
     const testimonials = Array.isArray(payload.testimonials) ? payload.testimonials : [];
+    const posts = Array.isArray(payload.posts) ? payload.posts : [];
     const pending = testimonials.filter((t) => !t.approved);
 
-    if (!pending.length) {
-      pendingTestimonials.innerHTML = "<p>No pending testimonials.</p>";
-      return;
+    if (pendingTestimonials) {
+      pendingTestimonials.innerHTML = pending.length
+        ? pending
+            .map((t) => `
+              <div>
+                <strong>${t.name}</strong><br>
+                <small>${new Date(t.createdAt || Date.now()).toLocaleString()}</small>
+                <p>${t.message}</p>
+                <button type="button" class="btn mini" data-approve-testimonial="${t.id}">Approve</button>
+                <button type="button" class="btn mini danger" data-delete-testimonial="${t.id}">Delete</button>
+              </div>
+            `)
+            .join("")
+        : "<p>No pending testimonials.</p>";
     }
 
-    pendingTestimonials.innerHTML = pending
-      .map((t) => `
-        <div>
-          <strong>${t.name}</strong><br>
-          <small>${new Date(t.createdAt || Date.now()).toLocaleString()}</small>
-          <p>${t.message}</p>
-          <button type="button" class="btn mini" data-approve-testimonial="${t.id}">Approve</button>
-        </div>
-      `)
-      .join("");
+    if (allTestimonials) {
+      const approved = testimonials.filter((t) => t.approved);
+      allTestimonials.innerHTML = approved.length
+        ? approved
+            .map((t) => `
+              <div>
+                <strong>${t.name}</strong><br>
+                <small>${new Date(t.createdAt || Date.now()).toLocaleString()}</small>
+                <p>${t.message}</p>
+                ${t.videoUrl ? `<small>Video: ${t.videoUrl}</small><br>` : ""}
+                <button type="button" class="btn mini danger" data-delete-testimonial="${t.id}">Delete</button>
+              </div>
+            `)
+            .join("")
+        : "<p>No approved testimonials yet.</p>";
+    }
+
+    if (blogPostsAdmin) {
+      blogPostsAdmin.innerHTML = posts.length
+        ? posts
+            .map((post) => `
+              <div>
+                <strong>${post.title}</strong><br>
+                <small>${new Date(post.createdAt || Date.now()).toLocaleString()}</small>
+                <p>${post.body}</p>
+                ${post.videoUrl ? `<small>Video: ${post.videoUrl}</small><br>` : ""}
+                <button type="button" class="btn mini danger" data-delete-post="${post.id}">Delete</button>
+              </div>
+            `)
+            .join("")
+        : "<p>No blog posts yet.</p>";
+    }
   } catch (error) {
-    pendingTestimonials.innerHTML = `<p>Could not load testimonials: ${error.message}</p>`;
+    if (pendingTestimonials) {
+      pendingTestimonials.innerHTML = `<p>Could not load testimonials: ${error.message}</p>`;
+    }
+    if (allTestimonials) {
+      allTestimonials.innerHTML = `<p>Could not load testimonials: ${error.message}</p>`;
+    }
+    if (blogPostsAdmin) {
+      blogPostsAdmin.innerHTML = `<p>Could not load posts: ${error.message}</p>`;
+    }
   }
 }
 
@@ -949,15 +993,49 @@ if (accountForm) {
 
 if (pendingTestimonials) {
   pendingTestimonials.addEventListener("click", async (event) => {
-    const button = event.target.closest("button[data-approve-testimonial]");
-    if (!button) return;
+    const approveBtn = event.target.closest("button[data-approve-testimonial]");
+    const deleteBtn = event.target.closest("button[data-delete-testimonial]");
 
-    const id = button.dataset.approveTestimonial;
+    if (approveBtn) {
+      const id = approveBtn.dataset.approveTestimonial;
+      try {
+        await apiFetch(`/admin/testimonials/${id}/approve`, { method: "POST" });
+        await loadContent();
+      } catch (error) {
+        alert(error.message || "Could not approve testimonial");
+      }
+      return;
+    }
+
+    if (deleteBtn) {
+      const id = deleteBtn.dataset.deleteTestimonial;
+      if (!window.confirm("Delete this testimonial? This cannot be undone.")) {
+        return;
+      }
+      try {
+        await apiFetch(`/admin/testimonials/${id}`, { method: "DELETE" });
+        await loadContent();
+      } catch (error) {
+        alert(error.message || "Could not delete testimonial");
+      }
+    }
+  });
+}
+
+if (allTestimonials) {
+  allTestimonials.addEventListener("click", async (event) => {
+    const deleteBtn = event.target.closest("button[data-delete-testimonial]");
+    if (!deleteBtn) return;
+
+    const id = deleteBtn.dataset.deleteTestimonial;
+    if (!window.confirm("Delete this testimonial? This cannot be undone.")) {
+      return;
+    }
     try {
-      await apiFetch(`/admin/testimonials/${id}/approve`, { method: "POST" });
+      await apiFetch(`/admin/testimonials/${id}`, { method: "DELETE" });
       await loadContent();
     } catch (error) {
-      alert(error.message || "Could not approve testimonial");
+      alert(error.message || "Could not delete testimonial");
     }
   });
 }
@@ -992,6 +1070,25 @@ if (blogForm && blogMessage) {
       blogMessage.textContent = error.message || "Could not publish post.";
       blogMessage.classList.remove("ok");
       blogMessage.classList.add("error");
+    }
+  });
+}
+
+if (blogPostsAdmin) {
+  blogPostsAdmin.addEventListener("click", async (event) => {
+    const deleteBtn = event.target.closest("button[data-delete-post]");
+    if (!deleteBtn) return;
+
+    const id = deleteBtn.dataset.deletePost;
+    if (!window.confirm("Delete this post? This cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await apiFetch(`/admin/posts/${id}`, { method: "DELETE" });
+      await loadContent();
+    } catch (error) {
+      alert(error.message || "Could not delete post");
     }
   });
 }
