@@ -42,8 +42,21 @@
     <main id="main-content" class="cart-page">
         <section class="cart-layout" aria-label="Shopping cart">
             <div class="cart-main">
+                <div class="cart-mobile-header" aria-label="Cart quick navigation">
+                    <a href="menu.html" class="mobile-back" aria-label="Back to menu">←</a>
+                    <p id="mobile-cart-title">Your Cart (0 items)</p>
+                </div>
+
                 <h1>Your Cart</h1>
                 <p class="cart-subtitle">Review your order before checkout.</p>
+
+                <div class="mobile-shipping-progress" aria-live="polite">
+                    <p id="mobile-shipping-progress-text">Add ₦15,000 for free shipping</p>
+                    <div class="shipping-progress-bar">
+                        <span id="mobile-shipping-progress-fill"></span>
+                    </div>
+                </div>
+
                 <div id="cart-items" class="cart-items" aria-live="polite"></div>
 
                 <section class="saved-section" aria-label="Saved for later">
@@ -101,11 +114,11 @@
     </main>
 
     <div class="mobile-checkout-bar" aria-label="Mobile checkout bar">
-        <div>
-            <p>Total</p>
-            <strong id="mobile-total">₦0</strong>
+        <div class="mobile-summary-row">
+            <p>Subtotal</p>
+            <strong id="mobile-subtotal">₦0</strong>
         </div>
-        <button type="button" class="btn btn-primary">Checkout</button>
+        <button type="button" class="btn btn-primary">Proceed to Checkout</button>
     </div>
 
     <div id="cart-toast" class="cart-toast" role="status" aria-live="polite"></div>

@@ -201,6 +201,51 @@ app.post("/api/auth/login", (req, res) => {
   return res.json({ token, user: { email, role: "admin" } });
 });
 
+app.get("/api/products", authMiddleware, async (_req, res) => {
+  try {
+    const catalog = await readCatalog();
+    return res.json(catalog.products || []);
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Could not read products" });
+  }
+});
+
+app.post("/api/products", authMiddleware, async (req, res) => {
+  try {
+    const newProduct = req.body || {};
+    const catalog = await readCatalog();
+
+    const productWithMeta = {
+      ...newProduct,
+      id: Date.now().toString(),
+      last_updated: new Date().toISOString()
+    };
+
+    const nextCatalog = {
+      ...catalog,
+      products: [...(catalog.products || []), productWithMeta]
+    };
+
+    if (
+      productWithMeta.category &&
+      typeof productWithMeta.category === "string" &&
+      !nextCatalog.categories.includes(productWithMeta.category)
+    ) {
+      nextCatalog.categories = [...nextCatalog.categories, productWithMeta.category];
+    }
+
+    await writeCatalog(nextCatalog);
+
+    const github = await commitCatalogToGithub(nextCatalog, req.user?.email);
+
+    return res
+      .status(201)
+      .json({ message: "Product added successfully!", product: productWithMeta, github });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Could not add product" });
+  }
+});
+
 app.get("/api/catalog", authMiddleware, async (_req, res) => {
   try {
     const catalog = await readCatalog();
