@@ -199,7 +199,7 @@
       "image": "images/zobo.jpg",
       "last_updated": "2026-03-11",
       "out_of_stock": false,
-      "order_only": false
+      "order_only": true
     },
     {
       "id": "p013",
@@ -262,7 +262,7 @@
       "description": "Cake, small chops and drinks",
       "image": "images/wedding.jpg",
       "last_updated": "2026-03-11",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     }
   ],
