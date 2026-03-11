@@ -117,51 +117,25 @@ async function canvasToDataUrl(canvas, mimeType, quality) {
   return canvas.toDataURL(mimeType, quality);
 }
 
-async function uploadToS3(file, folder, onProgress) {
+async function uploadToS3(file, _folder, onProgress) {
+  // Fallback: store media directly as data URL in JSON,
+  // but still report "progress" so the UI feels responsive.
   if (!file) {
     return "";
   }
 
-  const presign = await apiFetch("/uploads/presign", {
-    method: "POST",
-    body: JSON.stringify({
-      fileName: file.name,
-      fileType: file.type,
-      folder
-    })
-  });
-
-  const uploadUrl = presign.uploadUrl || presign.uploadURL;
-  const fileUrl = presign.fileUrl || presign.fileURL;
-
-  if (!uploadUrl || !fileUrl) {
-    throw new Error("Could not create upload URL");
+  const total = file.size || 1;
+  if (typeof onProgress === "function") {
+    onProgress(0, total);
   }
 
-  const putResponse = await new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadUrl, true);
-    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+  const dataUrl = await fileToDataUrl(file);
 
-    xhr.upload.onprogress = (event) => {
-      if (typeof onProgress === "function") {
-        onProgress(event.loaded || 0, event.total || 0);
-      }
-    };
+  if (typeof onProgress === "function") {
+    onProgress(total, total);
+  }
 
-    xhr.onerror = () => reject(new Error("Could not upload file to storage"));
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({ ok: true });
-      } else {
-        reject(new Error("Could not upload file to storage"));
-      }
-    };
-
-    xhr.send(file);
-  });
-
-  return fileUrl;
+  return dataUrl;
 }
 
 function setBlogMediaPreview(input, preview, type = "image") {
