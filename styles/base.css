@@ -392,25 +392,6 @@ img {
     color: var(--primary);
 }
 
-.cta-section {
-    text-align: center;
-    margin: 4rem 0;
-    padding: 3rem 2rem;
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: #fff;
-    border-radius: 12px;
-}
-
-.cta-section h2 {
-    color: #fff;
-    margin-bottom: 1rem;
-}
-
-.cta-section p {
-    font-size: 1.1rem;
-    margin-bottom: 1.5rem;
-}
-
 .visitor-counter {
     text-align: center;
     margin: 2rem 0;
@@ -1305,10 +1286,6 @@ body.force-mobile .remove-item {
 
     h2 {
         font-size: 1.8rem;
-    }
-
-    .cta-section {
-        padding: 2rem 1rem;
     }
 
     .modal-content {
