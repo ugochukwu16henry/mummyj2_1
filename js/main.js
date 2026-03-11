@@ -5,10 +5,13 @@ import { openModal, closeModal } from "./modal.js";
 import { updateCartBadge } from "./cart-store.js";
 
 function applyMobileLayoutFallback() {
+  const userAgent = navigator.userAgent || "";
+  const isMobileUA = /Android|iPhone|iPad|iPod|Mobile|Opera Mini|IEMobile/i.test(userAgent);
   const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
   const compactPhysicalScreen = Math.min(window.screen.width, window.screen.height) <= 1200;
   const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
-  const shouldForceMobile = hasTouch && compactPhysicalScreen && coarsePointer;
+  const compactViewport = Math.min(window.innerWidth || 0, window.innerHeight || 0) <= 1100;
+  const shouldForceMobile = (hasTouch && compactPhysicalScreen && coarsePointer) || (isMobileUA && compactViewport);
 
   document.body.classList.toggle("force-mobile", shouldForceMobile);
 }

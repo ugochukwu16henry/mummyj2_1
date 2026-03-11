@@ -1438,6 +1438,108 @@ body.force-mobile .remove-item {
     }
 }
 
+/* Final mobile alignment overrides */
+@media (max-width: 1100px) {
+    #menu-grid.grid,
+    body.force-mobile #menu-grid.grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    #menu-grid .card,
+    body.force-mobile #menu-grid .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #menu-grid .card-actions,
+    body.force-mobile #menu-grid .card-actions {
+        grid-template-columns: 1fr;
+        gap: 0.55rem;
+    }
+
+    body.cart-screen .cart-page,
+    body.force-mobile .cart-page {
+        max-width: 460px;
+        margin: 0 auto;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        padding-bottom: 9.25rem;
+    }
+
+    body.cart-screen .cart-item,
+    body.force-mobile .cart-item {
+        padding: 0.85rem 0;
+    }
+
+    body.cart-screen .cart-item-shell,
+    body.force-mobile .cart-item-shell {
+        grid-template-columns: 92px minmax(0, 1fr);
+        gap: 0.75rem;
+        align-items: start;
+    }
+
+    body.cart-screen .cart-item-content,
+    body.force-mobile .cart-item-content {
+        min-width: 0;
+    }
+
+    body.cart-screen .cart-item-top,
+    body.force-mobile .cart-item-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    body.cart-screen .cart-item-top h3,
+    body.force-mobile .cart-item-top h3 {
+        font-size: 1rem;
+        line-height: 1.35;
+    }
+
+    body.cart-screen .cart-price,
+    body.force-mobile .cart-price {
+        white-space: normal;
+        font-size: 1rem;
+    }
+
+    body.cart-screen .cart-item-actions,
+    body.force-mobile .cart-item-actions {
+        width: 100%;
+        margin-top: 0.55rem;
+        justify-content: space-between;
+    }
+
+    body.cart-screen .qty-control,
+    body.force-mobile .qty-control {
+        min-height: 44px;
+    }
+
+    body.cart-screen .mobile-checkout-bar,
+    body.force-mobile .mobile-checkout-bar {
+        width: 100%;
+        max-width: 460px;
+        margin: 0 auto;
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+    }
+
+    body.cart-screen .cart-toast,
+    body.force-mobile .cart-toast {
+        width: min(92vw, 420px);
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, 10px);
+        justify-content: space-between;
+    }
+
+    body.cart-screen .cart-toast.show,
+    body.force-mobile .cart-toast.show {
+        transform: translate(-50%, 0);
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .mobile-checkout-bar .btn {
         animation: none;
