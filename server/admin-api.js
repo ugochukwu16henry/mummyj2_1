@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { fileURLToPath } from "node:url";
 
 const app = express();
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 8080;
 const JWT_SECRET = process.env.JWT_SECRET || "mjt-admin-secret";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
 const GITHUB_OWNER = process.env.GITHUB_OWNER || "";
