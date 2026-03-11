@@ -334,6 +334,12 @@ function renderSchemaForm() {
     <img id="product-image-preview" alt="Product preview" hidden>
     <button class="btn primary" type="submit">Add Product</button>
   `;
+
+  const statusEl = document.createElement("p");
+  statusEl.id = "product-publish-status";
+  statusEl.className = "account-message";
+  statusEl.setAttribute("aria-live", "polite");
+  productForm.appendChild(statusEl);
 }
 
 function getStockClass(stock) {
@@ -688,6 +694,11 @@ loginForm.addEventListener("submit", async (event) => {
 
 productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const publishStatus = document.getElementById("product-publish-status");
+  if (publishStatus) {
+    publishStatus.textContent = "";
+    publishStatus.classList.remove("ok", "error");
+  }
   const formData = new FormData(productForm);
   const product = {};
 
@@ -742,10 +753,23 @@ productForm.addEventListener("submit", async (event) => {
   }
 
   try {
+    if (publishStatus) {
+      publishStatus.textContent = "Publishing product...";
+    }
     await saveCatalog();
+    if (publishStatus) {
+      publishStatus.textContent = "Published ✅ Product saved to catalog.json";
+      publishStatus.classList.remove("error");
+      publishStatus.classList.add("ok");
+    }
     showSyncing(true, "Product added and published to catalog.json");
     setTimeout(() => showSyncing(false), 1400);
   } catch (error) {
+    if (publishStatus) {
+      publishStatus.textContent = `Publish failed: ${error.message}`;
+      publishStatus.classList.remove("ok");
+      publishStatus.classList.add("error");
+    }
     showSyncing(true, `Product added locally, but publish failed: ${error.message}`);
     setTimeout(() => showSyncing(false), 2200);
   }
