@@ -28,7 +28,7 @@ export function openModal(id, dataArray) {
       <p><strong>Price:</strong> <span class="price">${item.price}</span></p>
       <p style="margin-top:1rem;">${item.desc}</p>
     </div>
-    <a href="about.html#contact" class="btn btn-primary" style="display:inline-block;text-align:center;">Order Now</a>
+    <a href="about.html#contact" class="btn btn-primary" style="display:inline-block;text-align:center;">Contact Us</a>
   `;
 
   // Show modal with proper ARIA attributes
