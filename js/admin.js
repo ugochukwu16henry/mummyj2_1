@@ -200,11 +200,24 @@ async function loadCatalog() {
 async function saveCatalog() {
   showSyncing(true);
   try {
-    await apiFetch("/catalog", {
+    const result = await apiFetch("/catalog", {
       method: "PUT",
       body: JSON.stringify(state.catalog)
     });
     renderJsonPreview();
+
+    if (result?.github?.committed) {
+      showSyncing(true, `Synced and committed (${result.github.commitSha.slice(0, 7)})`);
+      setTimeout(() => showSyncing(false), 1400);
+      return;
+    }
+
+    if (result?.github?.enabled === false) {
+      showSyncing(true, "Synced locally. GitHub auto-commit not configured.");
+      setTimeout(() => showSyncing(false), 1600);
+      return;
+    }
+
     showSyncing(true, "Synced to catalog.json");
     setTimeout(() => showSyncing(false), 900);
   } catch (error) {

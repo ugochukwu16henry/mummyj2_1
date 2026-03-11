@@ -14,7 +14,10 @@
       "name": "Chocolate Fudge Cake",
       "price": 18000,
       "category": "Cakes",
-      "tags": ["cake", "chocolate"],
+      "tags": [
+        "cake",
+        "chocolate"
+      ],
       "stock": 12,
       "description": "Rich chocolate layers with ganache",
       "image": "images/cake1.png",
@@ -25,7 +28,10 @@
       "name": "Red Velvet Cake",
       "price": 20000,
       "category": "Cakes",
-      "tags": ["cake", "premium"],
+      "tags": [
+        "cake",
+        "premium"
+      ],
       "stock": 10,
       "description": "Classic cream cheese frosting",
       "image": "images/cake2.jpg",
@@ -36,7 +42,10 @@
       "name": "Vanilla Berry Cake",
       "price": 17000,
       "category": "Cakes",
-      "tags": ["cake", "berry"],
+      "tags": [
+        "cake",
+        "berry"
+      ],
       "stock": 8,
       "description": "Fresh berries and vanilla sponge",
       "image": "images/cake3.jpg",
@@ -47,7 +56,10 @@
       "name": "Meat Pie (Pack of 6)",
       "price": 3000,
       "category": "Pastries",
-      "tags": ["snack", "savory"],
+      "tags": [
+        "snack",
+        "savory"
+      ],
       "stock": 40,
       "description": "Flaky pastry with spiced beef",
       "image": "images/meatpie.jpg",
@@ -58,7 +70,10 @@
       "name": "Doughnuts (12)",
       "price": 2400,
       "category": "Pastries",
-      "tags": ["snack", "sweet"],
+      "tags": [
+        "snack",
+        "sweet"
+      ],
       "stock": 50,
       "description": "Sugar glazed or chocolate",
       "image": "images/doughnut.jpg",
@@ -69,7 +84,10 @@
       "name": "Chin Chin (500g)",
       "price": 2000,
       "category": "Pastries",
-      "tags": ["snack", "crunchy"],
+      "tags": [
+        "snack",
+        "crunchy"
+      ],
       "stock": 60,
       "description": "Crunchy and sweet",
       "image": "images/chinchin.jpg",
@@ -80,7 +98,10 @@
       "name": "Puff Puff (20)",
       "price": 2000,
       "category": "Pastries",
-      "tags": ["snack", "fried"],
+      "tags": [
+        "snack",
+        "fried"
+      ],
       "stock": 45,
       "description": "Freshly fried daily",
       "image": "images/puffpuff.jpg",
@@ -91,7 +112,10 @@
       "name": "Spring Rolls (10)",
       "price": 4500,
       "category": "Small Chops",
-      "tags": ["small chops", "party"],
+      "tags": [
+        "small chops",
+        "party"
+      ],
       "stock": 30,
       "description": "Veggies and chicken",
       "image": "images/springroll.jpg",
@@ -102,7 +126,10 @@
       "name": "Samosa (10)",
       "price": 4000,
       "category": "Small Chops",
-      "tags": ["small chops", "beef"],
+      "tags": [
+        "small chops",
+        "beef"
+      ],
       "stock": 28,
       "description": "Spicy beef filling",
       "image": "images/samosa.jpg",
@@ -113,7 +140,10 @@
       "name": "Mosa (10)",
       "price": 3000,
       "category": "Small Chops",
-      "tags": ["small chops", "plantain"],
+      "tags": [
+        "small chops",
+        "plantain"
+      ],
       "stock": 25,
       "description": "Plantain and fish",
       "image": "images/mosa.jpg",
@@ -124,7 +154,10 @@
       "name": "Parfait (Large)",
       "price": 5000,
       "category": "Parfait",
-      "tags": ["dessert", "yogurt"],
+      "tags": [
+        "dessert",
+        "yogurt"
+      ],
       "stock": 20,
       "description": "Yogurt, granola, fruits",
       "image": "images/parfait.jpg",
@@ -135,7 +168,10 @@
       "name": "Zobo Drink (1.5L)",
       "price": 2500,
       "category": "Drinks",
-      "tags": ["drink", "hibiscus"],
+      "tags": [
+        "drink",
+        "hibiscus"
+      ],
       "stock": 35,
       "description": "Hibiscus and pineapple",
       "image": "images/zobo.jpg",
@@ -146,7 +182,10 @@
       "name": "Chapman Cocktail",
       "price": 1500,
       "category": "Drinks",
-      "tags": ["drink", "cocktail"],
+      "tags": [
+        "drink",
+        "cocktail"
+      ],
       "stock": 30,
       "description": "Non-alcoholic classic",
       "image": "images/chapman.jpg",
@@ -157,7 +196,10 @@
       "name": "Jollof Rice Plate",
       "price": 1800,
       "category": "Meals",
-      "tags": ["meal", "rice"],
+      "tags": [
+        "meal",
+        "rice"
+      ],
       "stock": 22,
       "description": "With chicken and plantain",
       "image": "images/jollof.jpg",
@@ -168,7 +210,10 @@
       "name": "Egusi Soup and Pounded Yam",
       "price": 2500,
       "category": "Meals",
-      "tags": ["meal", "traditional"],
+      "tags": [
+        "meal",
+        "traditional"
+      ],
       "stock": 18,
       "description": "Traditional delicacy",
       "image": "images/egusi.jpg",
@@ -179,7 +224,10 @@
       "name": "Wedding Package (50 Guests)",
       "price": 150000,
       "category": "Events",
-      "tags": ["events", "package"],
+      "tags": [
+        "events",
+        "package"
+      ],
       "stock": 5,
       "description": "Cake, small chops and drinks",
       "image": "images/wedding.jpg",

@@ -8,6 +8,11 @@ import { fileURLToPath } from "node:url";
 const app = express();
 const PORT = process.env.PORT || 5050;
 const JWT_SECRET = process.env.JWT_SECRET || "mjt-admin-secret";
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || "";
+const GITHUB_OWNER = process.env.GITHUB_OWNER || "";
+const GITHUB_REPO = process.env.GITHUB_REPO || "";
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || "main";
+const GITHUB_CATALOG_PATH = process.env.GITHUB_CATALOG_PATH || "data/catalog.json";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CATALOG_PATH = path.resolve(__dirname, "../data/catalog.json");
@@ -39,6 +44,100 @@ async function readCatalog() {
 async function writeCatalog(catalog) {
   const output = `${JSON.stringify(sanitizeCatalog(catalog), null, 2)}\n`;
   await fs.writeFile(CATALOG_PATH, output, "utf-8");
+}
+
+function isGithubSyncEnabled() {
+  return Boolean(GITHUB_TOKEN && GITHUB_OWNER && GITHUB_REPO);
+}
+
+function buildGithubContentUrl() {
+  const encodedPath = GITHUB_CATALOG_PATH
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+  return `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${encodedPath}`;
+}
+
+async function githubRequest(url, options = {}) {
+  const response = await fetch(url, {
+    ...options,
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+      "Content-Type": "application/json",
+      ...(options.headers || {})
+    }
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = payload?.message || `GitHub request failed with ${response.status}`;
+    throw new Error(message);
+  }
+
+  return payload;
+}
+
+async function getRemoteCatalogSha() {
+  const url = `${buildGithubContentUrl()}?ref=${encodeURIComponent(GITHUB_BRANCH)}`;
+  const response = await fetch(url, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      "X-GitHub-Api-Version": "2022-11-28"
+    }
+  });
+
+  if (response.status === 404) {
+    return null;
+  }
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = payload?.message || `Could not fetch remote file sha (${response.status})`;
+    throw new Error(message);
+  }
+
+  return payload?.sha || null;
+}
+
+async function commitCatalogToGithub(catalog, actorEmail = "admin@mummyj2treats.com") {
+  if (!isGithubSyncEnabled()) {
+    return {
+      enabled: false,
+      committed: false,
+      message: "GitHub sync skipped. Set GITHUB_TOKEN, GITHUB_OWNER, and GITHUB_REPO to enable."
+    };
+  }
+
+  const sha = await getRemoteCatalogSha();
+  const content = `${JSON.stringify(sanitizeCatalog(catalog), null, 2)}\n`;
+  const body = {
+    message: `chore(catalog): update catalog.json (${new Date().toISOString()})`,
+    content: Buffer.from(content, "utf-8").toString("base64"),
+    branch: GITHUB_BRANCH,
+    committer: {
+      name: "mummyj2Treats Admin",
+      email: actorEmail
+    }
+  };
+
+  if (sha) {
+    body.sha = sha;
+  }
+
+  const response = await githubRequest(buildGithubContentUrl(), {
+    method: "PUT",
+    body: JSON.stringify(body)
+  });
+
+  return {
+    enabled: true,
+    committed: true,
+    commitSha: response?.commit?.sha || "",
+    commitUrl: response?.commit?.html_url || ""
+  };
 }
 
 function authMiddleware(req, res, next) {
@@ -94,9 +193,10 @@ app.get("/api/catalog", authMiddleware, async (_req, res) => {
 app.put("/api/catalog", authMiddleware, async (req, res) => {
   try {
     await writeCatalog(req.body);
-    res.json({ ok: true, syncedAt: new Date().toISOString() });
+    const github = await commitCatalogToGithub(req.body, req.user?.email);
+    res.json({ ok: true, syncedAt: new Date().toISOString(), github });
   } catch (error) {
-    res.status(500).json({ error: "Could not write catalog.json" });
+    res.status(500).json({ error: error.message || "Could not write catalog.json" });
   }
 });
 
