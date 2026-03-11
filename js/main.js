@@ -4,7 +4,17 @@ import { loadMenu } from "./menu.js";
 import { openModal, closeModal } from "./modal.js";
 import { updateCartBadge } from "./cart-store.js";
 
+function applyMobileLayoutFallback() {
+  const hasTouch = navigator.maxTouchPoints > 0 || "ontouchstart" in window;
+  const compactPhysicalScreen = Math.min(window.screen.width, window.screen.height) <= 1200;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const shouldForceMobile = hasTouch && compactPhysicalScreen && coarsePointer;
+
+  document.body.classList.toggle("force-mobile", shouldForceMobile);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+  applyMobileLayoutFallback();
   updateCartBadge();
 
   // Hamburger menu toggle with accessibility

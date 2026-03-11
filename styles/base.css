@@ -1086,6 +1086,90 @@ select:invalid:not(:placeholder-shown) {
     border: 0;
 }
 
+/* Runtime mobile fallback for devices that report desktop-sized viewports */
+body.force-mobile .hamburger {
+    display: block;
+}
+
+body.force-mobile nav ul {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background: var(--primary);
+    padding: 1rem 0;
+}
+
+body.force-mobile nav ul.show {
+    display: flex;
+}
+
+body.force-mobile .grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+body.force-mobile .card {
+    text-align: left;
+}
+
+body.force-mobile .card img {
+    height: 190px;
+}
+
+body.force-mobile .card-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+
+body.force-mobile .view-details,
+body.force-mobile .add-to-cart {
+    width: 100%;
+    min-height: 44px;
+}
+
+body.force-mobile.cart-screen header,
+body.force-mobile.cart-screen footer {
+    display: none;
+}
+
+body.force-mobile .cart-layout {
+    grid-template-columns: 1fr;
+}
+
+body.force-mobile .cart-mobile-header,
+body.force-mobile .mobile-shipping-progress,
+body.force-mobile .mobile-checkout-bar {
+    display: grid;
+}
+
+body.force-mobile .mobile-checkout-bar {
+    display: flex;
+    flex-direction: column;
+}
+
+body.force-mobile .cart-items {
+    gap: 0;
+}
+
+body.force-mobile .cart-item {
+    padding: 0.9rem 0;
+    border-radius: 0;
+    box-shadow: none;
+    border-bottom: 1px solid rgba(61, 64, 91, 0.14);
+}
+
+body.force-mobile .cart-item-shell {
+    grid-template-columns: 100px minmax(0, 1fr);
+}
+
+body.force-mobile .remove-item {
+    display: none;
+}
+
 /* Responsive improvements */
 @media (max-width: 1100px) {
     body.cart-screen header,
