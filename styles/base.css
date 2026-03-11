@@ -605,6 +605,22 @@ select:invalid:not(:placeholder-shown) {
     background: #b85f05;
 }
 
+.add-to-cart:disabled {
+    background: #9aa0a6;
+    cursor: not-allowed;
+}
+
+.card-stock-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    background: #C65D48;
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    margin-bottom: 0.4rem;
+}
+
 .cart-page {
     max-width: 1280px;
     margin: 0 auto;

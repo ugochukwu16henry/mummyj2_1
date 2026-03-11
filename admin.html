@@ -60,6 +60,7 @@
                   <th>Category</th>
                   <th>Price</th>
                   <th>Stock Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="products-table"></tbody>
@@ -101,6 +102,10 @@
         </label>
         <label>Category
           <input type="text" id="drawer-category">
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="drawer-out-of-stock">
+          Mark as Out of Stock
         </label>
         <button class="btn primary" type="submit">Apply Change</button>
       </form>

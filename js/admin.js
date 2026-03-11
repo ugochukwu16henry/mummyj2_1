@@ -6,6 +6,7 @@ const JSON_SCHEMA = [
   { key: "price", label: "Price", type: "number", placeholder: "5000", required: true },
   { key: "category", label: "Category", type: "text", placeholder: "Cakes", required: true },
   { key: "stock", label: "Stock", type: "number", placeholder: "20", required: true },
+  { key: "out_of_stock", label: "Out of Stock", type: "checkbox", required: false },
   { key: "tags", label: "Tags (comma-separated)", type: "text", placeholder: "fresh,popular", required: false },
   { key: "description", label: "Description", type: "textarea", placeholder: "Short description", required: true },
   { key: "image", label: "Image path", type: "text", placeholder: "images/item.jpg", required: true }
@@ -65,10 +66,12 @@ async function apiFetch(path, options = {}) {
 }
 
 function normalizeProduct(product) {
+  const stock = Number(product.stock) || 0;
   return {
     ...product,
     price: Number(product.price) || 0,
-    stock: Number(product.stock) || 0,
+    stock,
+    out_of_stock: Boolean(product.out_of_stock) || stock <= 0,
     tags: Array.isArray(product.tags)
       ? product.tags
       : String(product.tags || "")
@@ -81,6 +84,15 @@ function normalizeProduct(product) {
 
 function renderSchemaForm() {
   productForm.innerHTML = JSON_SCHEMA.map((field) => {
+    if (field.type === "checkbox") {
+      return `
+        <label class="toggle-row">
+          <input type="checkbox" name="${field.key}">
+          ${field.label}
+        </label>
+      `;
+    }
+
     if (field.type === "textarea") {
       return `
         <label>${field.label}
@@ -98,7 +110,17 @@ function renderSchemaForm() {
 }
 
 function getStockClass(stock) {
+  if (stock <= 0) {
+    return "out";
+  }
   return stock > 10 ? "in" : "low";
+}
+
+function getStockLabel(product) {
+  if (product.out_of_stock || product.stock <= 0) {
+    return "Out of Stock";
+  }
+  return product.stock > 10 ? "In Stock" : "Low Stock";
 }
 
 function formatCurrency(value) {
@@ -119,7 +141,12 @@ function renderProductsTable() {
       </td>
       <td>${product.category}</td>
       <td class="mono">${formatCurrency(product.price)}</td>
-      <td><span class="stock-chip ${getStockClass(product.stock)}">${product.stock > 10 ? "In Stock" : "Low Stock"}</span></td>
+      <td><span class="stock-chip ${getStockClass(product.out_of_stock ? 0 : product.stock)}">${getStockLabel(product)}</span></td>
+      <td>
+        <div class="row-actions">
+          <button type="button" class="btn mini danger" data-delete-product="${product.id}">Delete</button>
+        </div>
+      </td>
     </tr>
   `).join("");
 }
@@ -128,7 +155,10 @@ function renderCategories() {
   categoryList.innerHTML = state.catalog.categories.map((category) => `
     <div class="category-row">
       <input type="text" value="${category}" data-old-category="${category}">
-      <button class="btn ghost" data-rename-category="${category}">Rename</button>
+      <div class="category-actions">
+        <button class="btn ghost mini" data-rename-category="${category}">Rename</button>
+        <button class="btn mini danger" data-delete-category="${category}">Delete</button>
+      </div>
     </div>
   `).join("");
 }
@@ -158,10 +188,11 @@ function openDrawer(product) {
   drawer.setAttribute("aria-hidden", "false");
   document.getElementById("drawer-price").value = String(product.price);
   document.getElementById("drawer-category").value = product.category;
+  document.getElementById("drawer-out-of-stock").checked = Boolean(product.out_of_stock);
   drawerPreview.textContent = JSON.stringify(
     {
-      before: { price: product.price, category: product.category },
-      after: { price: product.price, category: product.category }
+      before: { price: product.price, category: product.category, out_of_stock: Boolean(product.out_of_stock) },
+      after: { price: product.price, category: product.category, out_of_stock: Boolean(product.out_of_stock) }
     },
     null,
     2
@@ -258,6 +289,11 @@ productForm.addEventListener("submit", (event) => {
   const product = {};
 
   JSON_SCHEMA.forEach((field) => {
+    if (field.type === "checkbox") {
+      product[field.key] = formData.get(field.key) === "on";
+      return;
+    }
+
     const value = formData.get(field.key);
     if (field.key === "price" || field.key === "stock") {
       product[field.key] = Number(value);
@@ -280,6 +316,18 @@ productForm.addEventListener("submit", (event) => {
 });
 
 productsTable.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest("button[data-delete-product]");
+  if (deleteButton) {
+    event.stopPropagation();
+    const productId = deleteButton.dataset.deleteProduct;
+    state.catalog.products = state.catalog.products.filter((product) => String(product.id) !== String(productId));
+    applyFilter();
+    renderJsonPreview();
+    showSyncing(true, "Product deleted. Click Commit Changes to publish.");
+    setTimeout(() => showSyncing(false), 1500);
+    return;
+  }
+
   const row = event.target.closest("tr[data-id]");
   if (!row) {
     return;
@@ -306,6 +354,37 @@ addCategoryForm.addEventListener("submit", (event) => {
 });
 
 categoryList.addEventListener("click", (event) => {
+  const deleteButton = event.target.closest("button[data-delete-category]");
+  if (deleteButton) {
+    const category = deleteButton.dataset.deleteCategory;
+    const inUseCount = state.catalog.products.filter((product) => product.category === category).length;
+
+    if (inUseCount > 0) {
+      const confirmed = window.confirm(`${category} has ${inUseCount} product(s). Delete it and move products to Uncategorized?`);
+      if (!confirmed) {
+        return;
+      }
+
+      if (!state.catalog.categories.includes("Uncategorized")) {
+        state.catalog.categories.push("Uncategorized");
+      }
+
+      state.catalog.products = state.catalog.products.map((product) => (
+        product.category === category
+          ? { ...product, category: "Uncategorized", last_updated: new Date().toISOString().slice(0, 10) }
+          : product
+      ));
+    }
+
+    state.catalog.categories = state.catalog.categories.filter((value) => value !== category);
+    applyFilter();
+    renderCategories();
+    renderJsonPreview();
+    showSyncing(true, "Category deleted. Click Commit Changes to publish.");
+    setTimeout(() => showSyncing(false), 1500);
+    return;
+  }
+
   const button = event.target.closest("button[data-rename-category]");
   if (!button) {
     return;
@@ -347,11 +426,12 @@ drawerForm.addEventListener("input", () => {
 
   const nextPrice = Number(document.getElementById("drawer-price").value || product.price);
   const nextCategory = document.getElementById("drawer-category").value || product.category;
+  const nextOutOfStock = document.getElementById("drawer-out-of-stock").checked;
 
   drawerPreview.textContent = JSON.stringify(
     {
-      before: { price: product.price, category: product.category },
-      after: { price: nextPrice, category: nextCategory }
+      before: { price: product.price, category: product.category, out_of_stock: Boolean(product.out_of_stock) },
+      after: { price: nextPrice, category: nextCategory, out_of_stock: nextOutOfStock }
     },
     null,
     2
@@ -366,6 +446,7 @@ drawerForm.addEventListener("submit", (event) => {
 
   const nextPrice = Number(document.getElementById("drawer-price").value || 0);
   const nextCategory = document.getElementById("drawer-category").value.trim();
+  const nextOutOfStock = document.getElementById("drawer-out-of-stock").checked;
 
   state.catalog.products = state.catalog.products.map((product) => {
     if (product.id !== state.editingId) {
@@ -376,6 +457,7 @@ drawerForm.addEventListener("submit", (event) => {
       ...product,
       price: nextPrice,
       category: nextCategory,
+      out_of_stock: nextOutOfStock,
       last_updated: new Date().toISOString().slice(0, 10)
     };
   });

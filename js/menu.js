@@ -23,7 +23,8 @@ function normalizeCatalogPayload(rawPayload) {
     category: item.category || "General",
     price: formatPrice(item.price),
     desc: item.desc || item.description || "",
-    img: item.img || item.image || "images/placeholder.png"
+    img: item.img || item.image || "images/placeholder.png",
+    outOfStock: Boolean(item.out_of_stock) || Number(item.stock || 0) <= 0
   }));
 }
 
@@ -150,12 +151,13 @@ export async function loadMenu(container) {
       <article class="card" tabindex="0" role="article" aria-label="${item.name}">
         <img src="${item.img}" alt="${item.name}" loading="lazy">
         <div style="padding:1rem;">
+          ${item.outOfStock ? '<p class="card-stock-badge" aria-label="Out of stock">Out of Stock</p>' : ""}
           <h3>${item.name}</h3>
           <p>${item.desc}</p>
           <p class="price">${item.price}</p>
           <div class="card-actions">
             <button data-modal="${item.id}" class="view-details" aria-label="View details for ${item.name}">View Details</button>
-            <button data-add-cart="${item.id}" class="add-to-cart" aria-label="Add ${item.name} to cart">Add to Cart</button>
+            <button data-add-cart="${item.id}" class="add-to-cart" aria-label="Add ${item.name} to cart" ${item.outOfStock ? "disabled" : ""}>${item.outOfStock ? "Unavailable" : "Add to Cart"}</button>
           </div>
         </div>
       </article>
@@ -185,6 +187,11 @@ export async function loadMenu(container) {
         e.stopPropagation();
         const item = items.find((entry) => entry.id == btn.dataset.addCart);
         if (!item) {
+          return;
+        }
+
+        if (item.outOfStock) {
+          showAddToCartToast(`${item.name} is currently out of stock`);
           return;
         }
 
