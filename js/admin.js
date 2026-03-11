@@ -50,11 +50,8 @@ const blogForm = document.getElementById("blog-form");
 const blogMessage = document.getElementById("blog-message");
 const blogUploadStatus = document.getElementById("blog-upload-status");
 const blogImageFileInput = document.getElementById("blog-image-file");
-const blogVideoFileInput = document.getElementById("blog-video-file");
 const blogImagePreview = document.getElementById("blog-image-preview");
-const blogVideoPreview = document.getElementById("blog-video-preview");
 const blogImageClearBtn = document.getElementById("blog-image-clear");
-const blogVideoClearBtn = document.getElementById("blog-video-clear");
 const blogPostsAdmin = document.getElementById("blog-posts-admin");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
@@ -151,9 +148,6 @@ function setBlogMediaPreview(input, preview, type = "image") {
       if (type === "image" && blogImageClearBtn) {
         blogImageClearBtn.hidden = true;
       }
-      if (type === "video" && blogVideoClearBtn) {
-        blogVideoClearBtn.hidden = true;
-      }
       return;
     }
 
@@ -162,12 +156,6 @@ function setBlogMediaPreview(input, preview, type = "image") {
     preview.hidden = false;
     if (type === "image" && blogImageClearBtn) {
       blogImageClearBtn.hidden = false;
-    }
-    if (type === "video" && blogVideoClearBtn) {
-      blogVideoClearBtn.hidden = false;
-    }
-    if (type === "video") {
-      preview.load();
     }
   });
 }
@@ -269,11 +257,6 @@ function renderMediaPreview(url, maxHeight) {
     return "";
   }
   const safeUrl = String(url);
-  const isInlineVideo = safeUrl.startsWith("data:video");
-  const isFileVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(safeUrl);
-  if (isInlineVideo || isFileVideo) {
-    return `<video src="${safeUrl}" controls style="width:100%;max-height:${maxHeight}px;border-radius:10px;margin-top:0.4rem;"></video>`;
-  }
   return `<img src="${safeUrl}" alt="" style="width:100%;max-height:${maxHeight}px;object-fit:cover;border-radius:10px;margin-top:0.4rem;">`;
 }
 
@@ -531,7 +514,6 @@ async function loadContent() {
                 <small>${new Date(t.createdAt || Date.now()).toLocaleString()}</small>
                 <p>${t.message}</p>
                 ${renderMediaPreview(t.imageUrl, 120)}
-                ${renderMediaPreview(t.videoUrl, 160)}
                 <button type="button" class="btn mini" data-approve-testimonial="${t.id}">Approve</button>
                 <button type="button" class="btn mini danger" data-delete-testimonial="${t.id}">Delete</button>
               </div>
@@ -550,7 +532,6 @@ async function loadContent() {
                 <small>${new Date(t.approvedAt || t.createdAt || Date.now()).toLocaleString()}</small>
                 <p>${t.message}</p>
                 ${renderMediaPreview(t.imageUrl, 120)}
-                ${renderMediaPreview(t.videoUrl, 160)}
                 <button type="button" class="btn mini danger" data-delete-testimonial="${t.id}">Delete</button>
               </div>
             `)
@@ -567,7 +548,6 @@ async function loadContent() {
                 <small>${new Date(post.createdAt || Date.now()).toLocaleString()}</small>
                 <p>${post.body}</p>
                 ${renderMediaPreview(post.imageUrl, 120)}
-                ${renderMediaPreview(post.videoUrl, 160)}
                 <button type="button" class="btn mini danger" data-delete-post="${post.id}">Delete</button>
               </div>
             `)
@@ -1166,14 +1146,9 @@ if (allTestimonials) {
 
 if (blogForm && blogMessage) {
   setBlogMediaPreview(blogImageFileInput, blogImagePreview, "image");
-  setBlogMediaPreview(blogVideoFileInput, blogVideoPreview, "video");
 
   blogImageClearBtn?.addEventListener("click", () => {
     clearBlogMedia(blogImageFileInput, blogImagePreview, blogImageClearBtn);
-  });
-
-  blogVideoClearBtn?.addEventListener("click", () => {
-    clearBlogMedia(blogVideoFileInput, blogVideoPreview, blogVideoClearBtn);
   });
 
   blogForm.addEventListener("submit", async (event) => {
@@ -1187,7 +1162,6 @@ if (blogForm && blogMessage) {
     const title = document.getElementById("blog-title").value.trim();
     const body = document.getElementById("blog-body").value.trim();
     const imageFile = document.getElementById("blog-image-file")?.files?.[0] || null;
-    const videoFile = document.getElementById("blog-video-file")?.files?.[0] || null;
 
     if (!title || !body) {
       blogMessage.textContent = "Title and body are required.";
@@ -1198,9 +1172,8 @@ if (blogForm && blogMessage) {
 
     try {
       let imageUrl = "";
-      let videoUrl = "";
 
-      const mediaSteps = [imageFile, videoFile].filter(Boolean).length;
+      const mediaSteps = [imageFile].filter(Boolean).length;
       let completedSteps = 0;
       const announceUpload = (label) => (loaded, total) => {
         if (!blogUploadStatus || !mediaSteps) return;
@@ -1219,11 +1192,6 @@ if (blogForm && blogMessage) {
         completedSteps += 1;
       }
 
-      if (videoFile) {
-        videoUrl = await uploadToS3(videoFile, "blog-videos", announceUpload("Uploading video"));
-        completedSteps += 1;
-      }
-
       if (blogUploadStatus && mediaSteps) {
         blogUploadStatus.textContent = "Upload complete";
         blogUploadStatus.classList.add("ok");
@@ -1231,22 +1199,15 @@ if (blogForm && blogMessage) {
 
       await apiFetch("/admin/posts", {
         method: "POST",
-        body: JSON.stringify({ title, body, imageUrl, videoUrl })
+        body: JSON.stringify({ title, body, imageUrl })
       });
       blogForm.reset();
       if (blogImagePreview) {
         blogImagePreview.hidden = true;
         blogImagePreview.removeAttribute("src");
       }
-      if (blogVideoPreview) {
-        blogVideoPreview.hidden = true;
-        blogVideoPreview.removeAttribute("src");
-      }
       if (blogImageClearBtn) {
         blogImageClearBtn.hidden = true;
-      }
-      if (blogVideoClearBtn) {
-        blogVideoClearBtn.hidden = true;
       }
       blogMessage.textContent = "Post published. It now appears on the stories page.";
       blogMessage.classList.remove("error");

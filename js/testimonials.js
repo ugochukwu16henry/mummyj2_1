@@ -104,14 +104,6 @@ function renderHomeTestimonials(testimonials) {
         <div style="padding:1rem;">
           <h3>${t.name}</h3>
           <p>"${t.message}"</p>
-          ${
-            t.videoUrl
-              ? (t.videoUrl.startsWith("data:video")
-                  || t.videoUrl.match(/\.(mp4|webm|ogg)(\?|$)/i))
-                ? `<video src="${t.videoUrl}" controls style="width:100%;max-height:260px;border-radius:10px;margin-top:0.75rem;"></video>`
-                : `<p><a href="${t.videoUrl}" target="_blank" rel="noopener" class="btn">Watch Video</a></p>`
-              : ""
-          }
         </div>
       </article>
     `)
@@ -134,14 +126,6 @@ function renderPageTestimonials(testimonials) {
         <div style="padding:1rem;">
           <h3>${t.name}</h3>
           <p>"${t.message}"</p>
-          ${
-            t.videoUrl
-              ? (t.videoUrl.startsWith("data:video")
-                  || t.videoUrl.match(/\.(mp4|webm|ogg)(\?|$)/i))
-                ? `<video src="${t.videoUrl}" controls style="width:100%;max-height:320px;border-radius:10px;margin-top:0.75rem;"></video>`
-                : `<p><a href="${t.videoUrl}" target="_blank" rel="noopener" class="btn">Watch Video</a></p>`
-              : ""
-          }
         </div>
       </article>
     `)
@@ -164,14 +148,6 @@ function renderBlog(posts) {
         <div style="padding:1rem;">
           <h3>${post.title}</h3>
           <p>${post.body}</p>
-          ${
-            post.videoUrl
-              ? (post.videoUrl.startsWith("data:video")
-                  || post.videoUrl.match(/\.(mp4|webm|ogg)(\?|$)/i))
-                ? `<video src="${post.videoUrl}" controls style="width:100%;max-height:360px;border-radius:10px;margin-top:0.75rem;"></video>`
-                : `<p><a href="${post.videoUrl}" target="_blank" rel="noopener" class="btn">Watch Video</a></p>`
-              : ""
-          }
         </div>
       </article>
     `)
@@ -205,9 +181,7 @@ function setupTestimonialForm() {
   const messageField = document.getElementById("testimonial-message");
   const nameField = document.getElementById("testimonial-name");
   const imageInput = document.getElementById("testimonial-image-file");
-  const videoInput = document.getElementById("testimonial-video-file");
   const imagePreview = document.getElementById("testimonial-image-preview");
-  const videoPreview = document.getElementById("testimonial-video-preview");
   const skipMediaBtn = document.getElementById("story-skip-media");
   const confettiLayer = document.getElementById("testimonial-confetti");
   const uploadProgress = document.getElementById("story-upload-progress");
@@ -357,7 +331,6 @@ function setupTestimonialForm() {
   }
 
   bindFilePreview(imageInput, imagePreview, "image");
-  bindFilePreview(videoInput, videoPreview, "video");
   setupConfetti();
   hideUploadProgress();
   updateProgress();
@@ -373,19 +346,16 @@ function setupTestimonialForm() {
     const name = String(nameField?.value || "").trim();
     const message = String(messageField?.value || "").trim();
     const imageFile = imageInput?.files?.[0] || null;
-    const videoFile = videoInput?.files?.[0] || null;
 
     const imageError = validateFileSize(imageFile, 3 * 1024 * 1024);
-    const videoError = validateFileSize(videoFile, 30 * 1024 * 1024);
-    if (imageError || videoError) {
-      status.textContent = imageError || videoError;
+    if (imageError) {
+      status.textContent = imageError;
       return;
     }
 
     try {
       let imageUrl = "";
-      let videoUrl = "";
-      const uploadSteps = [imageFile, videoFile].filter(Boolean).length;
+      const uploadSteps = [imageFile].filter(Boolean).length;
       let completedSteps = 0;
 
       const makeProgressUpdater = (label) => (loaded, total) => {
@@ -412,17 +382,6 @@ function setupTestimonialForm() {
         completedSteps += 1;
       }
 
-      if (videoFile) {
-        videoUrl = await uploadFileToBucket(
-          videoFile,
-          videoFile.name || `video-${Date.now()}.mp4`,
-          videoFile.type || "video/mp4",
-          "testimonials/videos",
-          makeProgressUpdater("Uploading video")
-        );
-        completedSteps += 1;
-      }
-
       if (uploadSteps) {
         updateUploadProgress(100, "Upload complete");
       }
@@ -430,7 +389,7 @@ function setupTestimonialForm() {
       const response = await fetch(`${API_BASE}/testimonials`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message, imageUrl, videoUrl })
+        body: JSON.stringify({ name, message, imageUrl })
       });
 
       if (!response.ok) {
@@ -447,10 +406,6 @@ function setupTestimonialForm() {
       if (imagePreview) {
         imagePreview.hidden = true;
         imagePreview.removeAttribute("src");
-      }
-      if (videoPreview) {
-        videoPreview.hidden = true;
-        videoPreview.removeAttribute("src");
       }
 
       currentStep = 2;

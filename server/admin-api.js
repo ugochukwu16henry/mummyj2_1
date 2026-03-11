@@ -326,7 +326,7 @@ app.get("/api/content", async (_req, res) => {
 });
 
 app.post("/api/testimonials", async (req, res) => {
-  const { name, message, imageUrl, videoUrl } = req.body || {};
+  const { name, message, imageUrl } = req.body || {};
 
   if (!name || !message) {
     return res.status(400).json({ error: "Name and message are required" });
@@ -338,7 +338,6 @@ app.post("/api/testimonials", async (req, res) => {
     name: String(name).trim(),
     message: String(message).trim(),
     imageUrl: imageUrl ? String(imageUrl).trim() : "",
-    videoUrl: videoUrl ? String(videoUrl).trim() : "",
     createdAt: new Date().toISOString(),
     approved: false
   };
@@ -382,7 +381,7 @@ app.delete("/api/admin/testimonials/:id", authMiddleware, async (req, res) => {
 });
 
 app.post("/api/admin/posts", authMiddleware, async (req, res) => {
-  const { title, body, imageUrl, videoUrl } = req.body || {};
+  const { title, body, imageUrl } = req.body || {};
 
   if (!title || !body) {
     return res.status(400).json({ error: "Title and body are required" });
@@ -394,7 +393,6 @@ app.post("/api/admin/posts", authMiddleware, async (req, res) => {
     title: String(title).trim(),
     body: String(body).trim(),
     imageUrl: imageUrl ? String(imageUrl).trim() : "",
-    videoUrl: videoUrl ? String(videoUrl).trim() : "",
     createdAt: new Date().toISOString(),
     published: true
   };
