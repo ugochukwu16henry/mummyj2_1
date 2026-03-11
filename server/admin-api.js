@@ -28,17 +28,23 @@ function sanitizeCatalog(data) {
     return { categories: [], products: [], category_images: {}, orders: [] };
   }
 
+  const categories = Array.isArray(data.categories)
+    ? data.categories.filter((item) => typeof item === "string")
+    : [];
+
+  const allowedCategories = new Set(categories);
+
   return {
-    categories: Array.isArray(data.categories)
-      ? data.categories.filter((item) => typeof item === "string")
-      : [],
+    categories,
     products: Array.isArray(data.products)
       ? data.products.filter((item) => item && typeof item === "object")
       : [],
     category_images: data.category_images && typeof data.category_images === "object"
       ? Object.fromEntries(
         Object.entries(data.category_images).filter(
-          ([key, value]) => typeof key === "string" && typeof value === "string"
+          ([key, value]) => typeof key === "string"
+            && allowedCategories.has(key)
+            && typeof value === "string"
         )
       )
       : {},
