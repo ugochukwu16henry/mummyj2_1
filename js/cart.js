@@ -197,6 +197,8 @@ function renderCartItems() {
               <div>
                 <h3>${item.name}</h3>
                 <p class="cart-meta">${item.category}</p>
+                ${item.order_request ? `<p class="cart-meta">Need: ${item.order_request.date} ${item.order_request.time} • Qty: ${item.order_request.qty}</p>` : ""}
+                ${item.order_request?.notes ? `<p class="cart-meta">Note: ${item.order_request.notes}</p>` : ""}
                 <button class="save-later" data-save="${item.id}">Save for later</button>
               </div>
               <p class="cart-price">${item.price}</p>

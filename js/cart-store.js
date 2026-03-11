@@ -72,13 +72,17 @@ function upsertItem(list, incoming) {
 
 export function addItemToCart(item) {
   const state = getCartState();
+  const lineId = String(item.cart_line_id || item.id);
   const prepared = {
-    id: String(item.id),
+    id: lineId,
+    product_id: String(item.id),
     name: item.name,
     img: item.img || item.image || "images/placeholder.png",
     category: item.category || "",
     price: item.price,
-    qty: Number(item.qty) > 0 ? Number(item.qty) : 1
+    qty: Number(item.qty) > 0 ? Number(item.qty) : 1,
+    order_request: item.order_request || null,
+    order_only: Boolean(item.order_only || item.orderOnly)
   };
 
   state.items = upsertItem(state.items, prepared);

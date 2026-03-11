@@ -24,7 +24,7 @@ app.use(express.json({ limit: "1mb" }));
 
 function sanitizeCatalog(data) {
   if (!data || typeof data !== "object") {
-    return { categories: [], products: [], category_images: {} };
+    return { categories: [], products: [], category_images: {}, orders: [] };
   }
 
   return {
@@ -40,7 +40,10 @@ function sanitizeCatalog(data) {
           ([key, value]) => typeof key === "string" && typeof value === "string"
         )
       )
-      : {}
+      : {},
+    orders: Array.isArray(data.orders)
+      ? data.orders.filter((entry) => entry && typeof entry === "object")
+      : []
   };
 }
 
@@ -335,6 +338,48 @@ app.put("/api/catalog", authMiddleware, async (req, res) => {
     res.json({ ok: true, syncedAt: new Date().toISOString(), github });
   } catch (error) {
     res.status(500).json({ error: error.message || "Could not write catalog.json" });
+  }
+});
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const catalog = await readCatalog();
+    const incoming = req.body || {};
+    const orders = Array.isArray(catalog.orders) ? catalog.orders : [];
+
+    const order = {
+      orderId: String(incoming.orderId || `ORD-${Date.now()}`),
+      productId: String(incoming.productId || ""),
+      productName: String(incoming.productName || ""),
+      qty: Number(incoming.qty) > 0 ? Number(incoming.qty) : 1,
+      date: String(incoming.date || ""),
+      time: String(incoming.time || ""),
+      customerName: String(incoming.customerName || ""),
+      phone: String(incoming.phone || ""),
+      notes: String(incoming.notes || ""),
+      status: String(incoming.status || "pending"),
+      createdAt: incoming.createdAt || new Date().toISOString()
+    };
+
+    const nextCatalog = {
+      ...catalog,
+      orders: [order, ...orders]
+    };
+
+    await writeCatalog(nextCatalog);
+    const github = await commitCatalogToGithub(nextCatalog, "customer@mummyj2treats.com");
+    return res.status(201).json({ ok: true, order, github });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Could not submit order" });
+  }
+});
+
+app.get("/api/orders", authMiddleware, async (_req, res) => {
+  try {
+    const catalog = await readCatalog();
+    return res.json({ orders: Array.isArray(catalog.orders) ? catalog.orders : [] });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Could not load orders" });
   }
 });
 

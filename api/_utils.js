@@ -11,7 +11,7 @@ const GITHUB_CATALOG_PATH = process.env.GITHUB_CATALOG_PATH || "data/catalog.jso
 
 export function sanitizeCatalog(data) {
   if (!data || typeof data !== "object") {
-    return { categories: [], products: [], category_images: {} };
+    return { categories: [], products: [], category_images: {}, orders: [] };
   }
 
   return {
@@ -27,7 +27,10 @@ export function sanitizeCatalog(data) {
           ([key, value]) => typeof key === "string" && typeof value === "string"
         )
       )
-      : {}
+      : {},
+    orders: Array.isArray(data.orders)
+      ? data.orders.filter((entry) => entry && typeof entry === "object")
+      : []
   };
 }
 

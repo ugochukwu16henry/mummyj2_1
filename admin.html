@@ -140,11 +140,36 @@
           <input type="checkbox" id="drawer-out-of-stock">
           Mark as Out of Stock
         </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="drawer-order-only">
+          Mark as Order Only
+        </label>
         <button class="btn primary" type="submit">Apply Change</button>
       </form>
       <h4>Change Preview</h4>
       <pre id="drawer-preview"></pre>
     </aside>
+
+    <section class="panel orders-panel" id="orders-panel" hidden>
+      <h2>Customer Orders</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Product</th>
+              <th>Customer</th>
+              <th>Phone</th>
+              <th>Qty</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="orders-table"></tbody>
+        </table>
+      </div>
+    </section>
   </main>
 
   <script type="module" src="js/admin.js"></script>

@@ -250,5 +250,6 @@
       "out_of_stock": false
     }
   ],
-  "category_images": {}
+  "category_images": {},
+  "orders": []
 }

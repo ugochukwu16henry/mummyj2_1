@@ -9,6 +9,7 @@ const JSON_SCHEMA = [
   { key: "category", label: "Category", type: "text", placeholder: "Cakes", required: true },
   { key: "stock", label: "Stock", type: "number", placeholder: "20", required: true },
   { key: "out_of_stock", label: "Out of Stock", type: "checkbox", required: false },
+  { key: "order_only", label: "Order Only", type: "checkbox", required: false },
   { key: "tags", label: "Tags (comma-separated)", type: "text", placeholder: "fresh,popular", required: false },
   { key: "description", label: "Description", type: "textarea", placeholder: "Short description", required: true },
   { key: "image", label: "Image path", type: "text", placeholder: "images/item.jpg", required: true }
@@ -16,7 +17,7 @@ const JSON_SCHEMA = [
 
 const state = {
   token: localStorage.getItem(TOKEN_KEY) || "",
-  catalog: { categories: [], products: [], category_images: {} },
+  catalog: { categories: [], products: [], category_images: {}, orders: [] },
   filteredProducts: [],
   editingId: null,
   stockFilter: "all"
@@ -43,6 +44,8 @@ const stockFilterButtons = Array.from(document.querySelectorAll("button[data-sto
 const accountEmail = document.getElementById("account-email");
 const accountForm = document.getElementById("account-form");
 const accountMessage = document.getElementById("account-message");
+const ordersTable = document.getElementById("orders-table");
+const ordersPanel = document.getElementById("orders-panel");
 
 const IMAGE_LIMITS = {
   product: { maxWidth: 1200, maxHeight: 1200, quality: 0.78 },
@@ -171,6 +174,7 @@ function normalizeProduct(product) {
     price: Number(product.price) || 0,
     stock,
     out_of_stock: Boolean(product.out_of_stock) || stock <= 0,
+    order_only: Boolean(product.order_only),
     tags: Array.isArray(product.tags)
       ? product.tags
       : String(product.tags || "")
@@ -222,6 +226,9 @@ function getStockClass(stock) {
 }
 
 function getStockLabel(product) {
+  if (product.order_only) {
+    return "Order Only";
+  }
   if (product.out_of_stock || product.stock <= 0) {
     return "Out of Stock";
   }
@@ -246,12 +253,39 @@ function renderProductsTable() {
       </td>
       <td>${product.category}</td>
       <td class="mono">${formatCurrency(product.price)}</td>
-      <td><span class="stock-chip ${getStockClass(product.out_of_stock ? 0 : product.stock)}">${getStockLabel(product)}</span></td>
+      <td><span class="stock-chip ${product.order_only ? "order" : getStockClass(product.out_of_stock ? 0 : product.stock)}">${getStockLabel(product)}</span></td>
       <td>
         <div class="row-actions">
           <button type="button" class="btn mini danger" data-delete-product="${product.id}">Delete</button>
         </div>
       </td>
+    </tr>
+  `).join("");
+}
+
+function renderOrders() {
+  if (!ordersTable) {
+    return;
+  }
+
+  const orders = Array.isArray(state.catalog.orders) ? [...state.catalog.orders] : [];
+  orders.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+
+  if (!orders.length) {
+    ordersTable.innerHTML = '<tr><td colspan="8">No customer orders yet.</td></tr>';
+    return;
+  }
+
+  ordersTable.innerHTML = orders.map((order) => `
+    <tr>
+      <td class="mono">${order.orderId || "-"}</td>
+      <td>${order.productName || "-"}</td>
+      <td>${order.customerName || "-"}</td>
+      <td>${order.phone || "-"}</td>
+      <td>${order.qty || 1}</td>
+      <td>${order.date || "-"}</td>
+      <td>${order.time || "-"}</td>
+      <td>${order.notes || "-"}</td>
     </tr>
   `).join("");
 }
@@ -324,19 +358,22 @@ function openDrawer(product) {
     drawerImagePreview.hidden = !product.image;
   }
   document.getElementById("drawer-out-of-stock").checked = Boolean(product.out_of_stock);
+  document.getElementById("drawer-order-only").checked = Boolean(product.order_only);
   drawerPreview.textContent = JSON.stringify(
     {
       before: {
         price: product.price,
         category: product.category,
         image: product.image,
-        out_of_stock: Boolean(product.out_of_stock)
+        out_of_stock: Boolean(product.out_of_stock),
+        order_only: Boolean(product.order_only)
       },
       after: {
         price: product.price,
         category: product.category,
         image: product.image,
-        out_of_stock: Boolean(product.out_of_stock)
+        out_of_stock: Boolean(product.out_of_stock),
+        order_only: Boolean(product.order_only)
       }
     },
     null,
@@ -383,12 +420,14 @@ async function loadCatalog() {
     products: Array.isArray(payload.products) ? payload.products.map(normalizeProduct) : [],
     category_images: payload.category_images && typeof payload.category_images === "object"
       ? payload.category_images
-      : {}
+      : {},
+    orders: Array.isArray(payload.orders) ? payload.orders : []
   };
 
   state.filteredProducts = [...state.catalog.products];
   renderProductsTable();
   renderCategories();
+  renderOrders();
   renderJsonPreview();
 }
 
@@ -425,11 +464,17 @@ async function saveCatalog() {
 function showDashboard() {
   loginPanel.hidden = true;
   dashboard.hidden = false;
+  if (ordersPanel) {
+    ordersPanel.hidden = false;
+  }
 }
 
 function showLogin() {
   dashboard.hidden = true;
   loginPanel.hidden = false;
+  if (ordersPanel) {
+    ordersPanel.hidden = true;
+  }
 }
 
 loginForm.addEventListener("submit", async (event) => {
@@ -703,6 +748,7 @@ drawerForm.addEventListener("input", () => {
   const nextCategory = document.getElementById("drawer-category").value || product.category;
   const nextImage = document.getElementById("drawer-image").value || product.image;
   const nextOutOfStock = document.getElementById("drawer-out-of-stock").checked;
+  const nextOrderOnly = document.getElementById("drawer-order-only").checked;
 
   drawerPreview.textContent = JSON.stringify(
     {
@@ -710,13 +756,15 @@ drawerForm.addEventListener("input", () => {
         price: product.price,
         category: product.category,
         image: product.image,
-        out_of_stock: Boolean(product.out_of_stock)
+        out_of_stock: Boolean(product.out_of_stock),
+        order_only: Boolean(product.order_only)
       },
       after: {
         price: nextPrice,
         category: nextCategory,
         image: nextImage,
-        out_of_stock: nextOutOfStock
+        out_of_stock: nextOutOfStock,
+        order_only: nextOrderOnly
       }
     },
     null,
@@ -779,6 +827,7 @@ drawerForm.addEventListener("submit", async (event) => {
   }
 
   const nextOutOfStock = document.getElementById("drawer-out-of-stock").checked;
+  const nextOrderOnly = document.getElementById("drawer-order-only").checked;
 
   state.catalog.products = state.catalog.products.map((product) => {
     if (product.id !== state.editingId) {
@@ -791,6 +840,7 @@ drawerForm.addEventListener("submit", async (event) => {
       category: nextCategory,
       image: nextImage || product.image,
       out_of_stock: nextOutOfStock,
+      order_only: nextOrderOnly,
       last_updated: new Date().toISOString().slice(0, 10)
     };
   });
@@ -801,6 +851,7 @@ drawerForm.addEventListener("submit", async (event) => {
 
   applyFilter();
   renderCategories();
+  renderOrders();
   renderJsonPreview();
   closeDrawer();
 });
