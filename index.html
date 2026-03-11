@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles/base.css?v=20260311d">
+    <link rel="stylesheet" href="styles/base.css?v=20260311h">
     <!-- Open Graph -->
     <meta property="og:title" content="mummyj2Treats – Uyo">
     <meta property="og:description" content="Best cakes, small chops & event catering in Uyo">
@@ -61,22 +61,59 @@
         <section class="featured-section" aria-label="Customer Stories">
             <h2>What Our Customers Say</h2>
             <div id="home-testimonials" class="grid" aria-live="polite"></div>
-            <form id="testimonial-form" class="testimonial-form" novalidate>
-                <h3>Share Your Experience</h3>
-                <p>Leave a short testimony. We’ll review and publish it on our stories page.</p>
-                <label>Your Name
-                    <input type="text" id="testimonial-name" required>
-                </label>
-                <label>Your Testimony
-                    <textarea id="testimonial-message" rows="3" required></textarea>
-                </label>
-                <label>Photo (optional)
-                    <input type="file" id="testimonial-image-file" accept="image/*" capture="environment">
-                </label>
-                <label>Short Video (optional)
-                    <input type="file" id="testimonial-video-file" accept="video/*" capture="environment">
-                </label>
-                <button type="submit" class="btn btn-primary">Submit Testimony</button>
+            <form id="testimonial-form" class="testimonial-form story-builder" novalidate>
+                <div class="story-progress" aria-hidden="true">
+                    <span id="story-progress-fill"></span>
+                </div>
+
+                <h3>Your Voice Matters</h3>
+                <p>Tell us your story. We'd love to feature you! Once approved, you'll see it on our wall of fame.</p>
+
+                <div class="story-step-frame" aria-live="polite">
+                    <section class="story-step active" data-step="1">
+                        <h4>Your Story, Our Inspiration.</h4>
+                        <label for="testimonial-message">What's the one thing you loved most?</label>
+                        <textarea id="testimonial-message" rows="3" placeholder="What was the best part of your experience?" required></textarea>
+                        <div class="story-actions">
+                            <button type="button" id="story-next-1" class="btn btn-primary">Next</button>
+                        </div>
+                    </section>
+
+                    <section class="story-step" data-step="2">
+                        <h4>What should we call you?</h4>
+                        <label for="testimonial-name">Your Name</label>
+                        <input type="text" id="testimonial-name" placeholder="Enter your name" required>
+                        <div class="story-actions split">
+                            <button type="button" id="story-back-2" class="btn">Back</button>
+                            <button type="button" id="story-next-2" class="btn btn-primary">Next</button>
+                        </div>
+                    </section>
+
+                    <section class="story-step" data-step="3">
+                        <h4>Put a Face to the Name (Optional).</h4>
+                        <div class="media-zones">
+                            <label class="media-drop-zone" for="testimonial-image-file">
+                                <input type="file" id="testimonial-image-file" accept="image/*" capture="environment" hidden>
+                                <span class="media-icon" aria-hidden="true">📷</span>
+                                <span class="media-title">Add a Photo</span>
+                                <img id="testimonial-image-preview" class="media-preview" alt="Selected photo preview" hidden>
+                            </label>
+
+                            <label class="media-drop-zone" for="testimonial-video-file">
+                                <input type="file" id="testimonial-video-file" accept="video/*" capture="environment" hidden>
+                                <span class="media-icon" aria-hidden="true">🎥</span>
+                                <span class="media-title">Add a Short Video</span>
+                                <video id="testimonial-video-preview" class="media-preview" muted playsinline hidden></video>
+                            </label>
+                        </div>
+
+                        <div class="story-actions split">
+                            <button type="button" id="story-back-3" class="btn">Back</button>
+                            <button type="submit" class="btn btn-primary shine-button">Share My Story</button>
+                        </div>
+                    </section>
+                </div>
+
                 <p id="testimonial-status" class="testimonial-status" aria-live="polite"></p>
             </form>
         </section>

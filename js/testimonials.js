@@ -141,22 +141,130 @@ function setupTestimonialForm() {
   const status = document.getElementById("testimonial-status");
   if (!form || !status) return;
 
+  const steps = Array.from(form.querySelectorAll(".story-step"));
+  const progressFill = document.getElementById("story-progress-fill");
+  const messageField = document.getElementById("testimonial-message");
+  const nameField = document.getElementById("testimonial-name");
+  const imageInput = document.getElementById("testimonial-image-file");
+  const videoInput = document.getElementById("testimonial-video-file");
+  const imagePreview = document.getElementById("testimonial-image-preview");
+  const videoPreview = document.getElementById("testimonial-video-preview");
+
+  let currentStep = 0;
+
+  function updateProgress() {
+    if (!progressFill) return;
+    const percent = ((currentStep + 1) / steps.length) * 100;
+    progressFill.style.width = `${percent}%`;
+  }
+
+  function showStep(nextIndex, direction = "forward") {
+    if (nextIndex < 0 || nextIndex >= steps.length || nextIndex === currentStep) {
+      return;
+    }
+
+    const current = steps[currentStep];
+    const incoming = steps[nextIndex];
+
+    current.classList.remove("active", "slide-in-right", "slide-in-left");
+    incoming.classList.add("active", direction === "forward" ? "slide-in-right" : "slide-in-left");
+
+    currentStep = nextIndex;
+    updateProgress();
+
+    setTimeout(() => {
+      incoming.classList.remove("slide-in-right", "slide-in-left");
+    }, 240);
+  }
+
+  function validateStep(stepIndex) {
+    status.textContent = "";
+
+    if (stepIndex === 0 && !String(messageField?.value || "").trim()) {
+      status.textContent = "Please tell us what you loved most before continuing.";
+      return false;
+    }
+
+    if (stepIndex === 1 && !String(nameField?.value || "").trim()) {
+      status.textContent = "Please add your name so we can credit your story.";
+      return false;
+    }
+
+    return true;
+  }
+
+  function autoGrowTextarea() {
+    if (!messageField) return;
+    messageField.style.height = "auto";
+    messageField.style.height = `${messageField.scrollHeight}px`;
+  }
+
+  function bindFilePreview(input, preview, type = "image") {
+    if (!input || !preview) return;
+
+    input.addEventListener("change", () => {
+      const file = input.files?.[0] || null;
+      if (!file) {
+        preview.hidden = true;
+        if (type === "video") {
+          preview.removeAttribute("src");
+        } else {
+          preview.removeAttribute("src");
+        }
+        return;
+      }
+
+      const blobUrl = URL.createObjectURL(file);
+      preview.hidden = false;
+      preview.src = blobUrl;
+      if (type === "video") {
+        preview.load();
+      }
+    });
+  }
+
+  document.getElementById("story-next-1")?.addEventListener("click", () => {
+    if (!validateStep(0)) return;
+    showStep(1, "forward");
+  });
+
+  document.getElementById("story-next-2")?.addEventListener("click", () => {
+    if (!validateStep(1)) return;
+    showStep(2, "forward");
+  });
+
+  document.getElementById("story-back-2")?.addEventListener("click", () => {
+    showStep(0, "back");
+  });
+
+  document.getElementById("story-back-3")?.addEventListener("click", () => {
+    showStep(1, "back");
+  });
+
+  if (messageField) {
+    messageField.addEventListener("input", autoGrowTextarea);
+    autoGrowTextarea();
+  }
+
+  bindFilePreview(imageInput, imagePreview, "image");
+  bindFilePreview(videoInput, videoPreview, "video");
+  updateProgress();
+
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
     status.textContent = "";
 
-    const name = document.getElementById("testimonial-name").value.trim();
-    const message = document.getElementById("testimonial-message").value.trim();
-    const imageFile = document.getElementById("testimonial-image-file")?.files?.[0] || null;
-    const videoFile = document.getElementById("testimonial-video-file")?.files?.[0] || null;
-
-    if (!name || !message) {
-      status.textContent = "Please enter your name and testimony.";
+    if (!validateStep(0) || !validateStep(1)) {
       return;
     }
 
-    const imageError = validateFileSize(imageFile, 2 * 1024 * 1024); // 2MB
-    const videoError = validateFileSize(videoFile, 8 * 1024 * 1024); // 8MB
+    const name = String(nameField?.value || "").trim();
+    const message = String(messageField?.value || "").trim();
+    const imageFile = imageInput?.files?.[0] || null;
+    const videoFile = videoInput?.files?.[0] || null;
+
+    const imageError = validateFileSize(imageFile, 2 * 1024 * 1024);
+    const videoError = validateFileSize(videoFile, 8 * 1024 * 1024);
     if (imageError || videoError) {
       status.textContent = imageError || videoError;
       return;
@@ -191,7 +299,19 @@ function setupTestimonialForm() {
       }
 
       form.reset();
-      status.textContent = "Thank you! Your testimony has been sent for approval.";
+      if (imagePreview) {
+        imagePreview.hidden = true;
+        imagePreview.removeAttribute("src");
+      }
+      if (videoPreview) {
+        videoPreview.hidden = true;
+        videoPreview.removeAttribute("src");
+      }
+
+      currentStep = 2;
+      showStep(0, "back");
+      autoGrowTextarea();
+      status.textContent = "❤ Thank you! We’re reviewing your story now.";
     } catch (error) {
       status.textContent = error.message;
     }
