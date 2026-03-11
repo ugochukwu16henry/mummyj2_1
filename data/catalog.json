@@ -3,10 +3,10 @@
     "Cakes",
     "Pastries",
     "Small Chops",
-    "Parfait",
     "Drinks",
     "Meals",
-    "Events"
+    "Events",
+    "Parfait"
   ],
   "products": [
     {
@@ -21,7 +21,8 @@
       "stock": 12,
       "description": "Rich chocolate layers with ganache",
       "image": "images/cake1.png",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p002",
@@ -35,7 +36,8 @@
       "stock": 10,
       "description": "Classic cream cheese frosting",
       "image": "images/cake2.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p003",
@@ -49,7 +51,8 @@
       "stock": 8,
       "description": "Fresh berries and vanilla sponge",
       "image": "images/cake3.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p004",
@@ -63,7 +66,8 @@
       "stock": 40,
       "description": "Flaky pastry with spiced beef",
       "image": "images/meatpie.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p005",
@@ -77,7 +81,8 @@
       "stock": 50,
       "description": "Sugar glazed or chocolate",
       "image": "images/doughnut.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p006",
@@ -91,7 +96,8 @@
       "stock": 60,
       "description": "Crunchy and sweet",
       "image": "images/chinchin.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p007",
@@ -105,7 +111,8 @@
       "stock": 45,
       "description": "Freshly fried daily",
       "image": "images/puffpuff.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p008",
@@ -119,7 +126,8 @@
       "stock": 30,
       "description": "Veggies and chicken",
       "image": "images/springroll.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p009",
@@ -133,7 +141,8 @@
       "stock": 28,
       "description": "Spicy beef filling",
       "image": "images/samosa.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p010",
@@ -147,12 +156,13 @@
       "stock": 25,
       "description": "Plantain and fish",
       "image": "images/mosa.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p011",
       "name": "Parfait (Large)",
-      "price": 5000,
+      "price": 4500,
       "category": "Parfait",
       "tags": [
         "dessert",
@@ -161,7 +171,8 @@
       "stock": 20,
       "description": "Yogurt, granola, fruits",
       "image": "images/parfait.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p012",
@@ -175,7 +186,8 @@
       "stock": 35,
       "description": "Hibiscus and pineapple",
       "image": "images/zobo.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p013",
@@ -189,7 +201,8 @@
       "stock": 30,
       "description": "Non-alcoholic classic",
       "image": "images/chapman.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p014",
@@ -203,7 +216,8 @@
       "stock": 22,
       "description": "With chicken and plantain",
       "image": "images/jollof.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p015",
@@ -217,7 +231,8 @@
       "stock": 18,
       "description": "Traditional delicacy",
       "image": "images/egusi.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     },
     {
       "id": "p016",
@@ -231,7 +246,9 @@
       "stock": 5,
       "description": "Cake, small chops and drinks",
       "image": "images/wedding.jpg",
-      "last_updated": "2026-03-11"
+      "last_updated": "2026-03-11",
+      "out_of_stock": false
     }
-  ]
+  ],
+  "category_images": {}
 }
