@@ -48,6 +48,11 @@ const pendingTestimonials = document.getElementById("pending-testimonials");
 const allTestimonials = document.getElementById("all-testimonials");
 const blogForm = document.getElementById("blog-form");
 const blogMessage = document.getElementById("blog-message");
+const blogUploadStatus = document.getElementById("blog-upload-status");
+const blogImageFileInput = document.getElementById("blog-image-file");
+const blogVideoFileInput = document.getElementById("blog-video-file");
+const blogImagePreview = document.getElementById("blog-image-preview");
+const blogVideoPreview = document.getElementById("blog-video-preview");
 const blogPostsAdmin = document.getElementById("blog-posts-admin");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
@@ -110,7 +115,7 @@ async function canvasToDataUrl(canvas, mimeType, quality) {
   return canvas.toDataURL(mimeType, quality);
 }
 
-async function uploadToS3(file, folder) {
+async function uploadToS3(file, folder, onProgress) {
   if (!file) {
     return "";
   }
@@ -131,19 +136,52 @@ async function uploadToS3(file, folder) {
     throw new Error("Could not create upload URL");
   }
 
-  const putResponse = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type || "application/octet-stream"
-    },
-    body: file
+  const putResponse = await new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadUrl, true);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+    xhr.upload.onprogress = (event) => {
+      if (typeof onProgress === "function") {
+        onProgress(event.loaded || 0, event.total || 0);
+      }
+    };
+
+    xhr.onerror = () => reject(new Error("Could not upload file to storage"));
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve({ ok: true });
+      } else {
+        reject(new Error("Could not upload file to storage"));
+      }
+    };
+
+    xhr.send(file);
   });
 
-  if (!putResponse.ok) {
-    throw new Error("Could not upload file to storage");
+  return fileUrl;
+}
+
+function setBlogMediaPreview(input, preview, type = "image") {
+  if (!input || !preview) {
+    return;
   }
 
-  return fileUrl;
+  input.addEventListener("change", () => {
+    const file = input.files?.[0] || null;
+    if (!file) {
+      preview.hidden = true;
+      preview.removeAttribute("src");
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    preview.src = objectUrl;
+    preview.hidden = false;
+    if (type === "video") {
+      preview.load();
+    }
+  });
 }
 
 async function optimizeImageFile(file, profile = "product") {
@@ -1094,9 +1132,16 @@ if (allTestimonials) {
 }
 
 if (blogForm && blogMessage) {
+  setBlogMediaPreview(blogImageFileInput, blogImagePreview, "image");
+  setBlogMediaPreview(blogVideoFileInput, blogVideoPreview, "video");
+
   blogForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     blogMessage.textContent = "";
+    if (blogUploadStatus) {
+      blogUploadStatus.textContent = "";
+      blogUploadStatus.classList.remove("error", "ok");
+    }
 
     const title = document.getElementById("blog-title").value.trim();
     const body = document.getElementById("blog-body").value.trim();
@@ -1114,12 +1159,33 @@ if (blogForm && blogMessage) {
       let imageUrl = "";
       let videoUrl = "";
 
+      const mediaSteps = [imageFile, videoFile].filter(Boolean).length;
+      let completedSteps = 0;
+      const announceUpload = (label) => (loaded, total) => {
+        if (!blogUploadStatus || !mediaSteps) return;
+        const base = (completedSteps / mediaSteps) * 100;
+        const fraction = total > 0 ? loaded / total : 0;
+        const percent = Math.min(99, Math.round(base + (fraction * (100 / mediaSteps))));
+        blogUploadStatus.textContent = `${label} ${percent}%`;
+      };
+
+      if (blogUploadStatus && mediaSteps) {
+        blogUploadStatus.textContent = "Preparing media upload...";
+      }
+
       if (imageFile) {
-        imageUrl = await uploadToS3(imageFile, "blog-images");
+        imageUrl = await uploadToS3(imageFile, "blog-images", announceUpload("Uploading image"));
+        completedSteps += 1;
       }
 
       if (videoFile) {
-        videoUrl = await uploadToS3(videoFile, "blog-videos");
+        videoUrl = await uploadToS3(videoFile, "blog-videos", announceUpload("Uploading video"));
+        completedSteps += 1;
+      }
+
+      if (blogUploadStatus && mediaSteps) {
+        blogUploadStatus.textContent = "Upload complete";
+        blogUploadStatus.classList.add("ok");
       }
 
       await apiFetch("/admin/posts", {
@@ -1127,6 +1193,14 @@ if (blogForm && blogMessage) {
         body: JSON.stringify({ title, body, imageUrl, videoUrl })
       });
       blogForm.reset();
+      if (blogImagePreview) {
+        blogImagePreview.hidden = true;
+        blogImagePreview.removeAttribute("src");
+      }
+      if (blogVideoPreview) {
+        blogVideoPreview.hidden = true;
+        blogVideoPreview.removeAttribute("src");
+      }
       blogMessage.textContent = "Post published. It now appears on the stories page.";
       blogMessage.classList.remove("error");
       blogMessage.classList.add("ok");
@@ -1134,6 +1208,10 @@ if (blogForm && blogMessage) {
       blogMessage.textContent = error.message || "Could not publish post.";
       blogMessage.classList.remove("ok");
       blogMessage.classList.add("error");
+      if (blogUploadStatus) {
+        blogUploadStatus.classList.remove("ok");
+        blogUploadStatus.classList.add("error");
+      }
     }
   });
 }

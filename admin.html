@@ -134,12 +134,15 @@
               <label>Body
                 <textarea id="blog-body" rows="3" required></textarea>
               </label>
-              <label>Cover Image (optional)
+              <label>Cover Image Upload (optional)
                 <input type="file" id="blog-image-file" accept="image/*" capture="environment">
               </label>
-              <label>Short Video (optional)
+              <img id="blog-image-preview" alt="Selected blog cover preview" class="blog-media-preview" hidden>
+              <label>Short Video Upload (optional)
                 <input type="file" id="blog-video-file" accept="video/*" capture="environment">
               </label>
+              <video id="blog-video-preview" class="blog-media-preview" controls muted playsinline hidden></video>
+              <p id="blog-upload-status" class="account-message" aria-live="polite"></p>
               <button type="submit" class="btn primary">Publish Post</button>
               <p id="blog-message" class="account-message" aria-live="polite"></p>
             </form>
