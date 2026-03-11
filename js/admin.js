@@ -740,6 +740,15 @@ productForm.addEventListener("submit", async (event) => {
     preview.hidden = true;
     preview.removeAttribute("src");
   }
+
+  try {
+    await saveCatalog();
+    showSyncing(true, "Product added and published to catalog.json");
+    setTimeout(() => showSyncing(false), 1400);
+  } catch (error) {
+    showSyncing(true, `Product added locally, but publish failed: ${error.message}`);
+    setTimeout(() => showSyncing(false), 2200);
+  }
 });
 
 productForm.addEventListener("change", async (event) => {
