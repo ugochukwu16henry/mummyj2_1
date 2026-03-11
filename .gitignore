@@ -1,3 +1,11 @@
 .env
 .env.*
 !.env.example
+node_modules/
+.pnpm/
+.pnpm-store/
+dist/
+build/
+.next/
+.vercel/
+.cache/
