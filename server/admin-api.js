@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cors from "cors";
 import express from "express";
 import fs from "node:fs/promises";
@@ -79,7 +80,7 @@ async function githubRequest(url, options = {}) {
   return payload;
 }
 
-async function getRemoteCatalogSha() {
+async function getRemoteCatalogSnapshot() {
   const url = `${buildGithubContentUrl()}?ref=${encodeURIComponent(GITHUB_BRANCH)}`;
   const response = await fetch(url, {
     headers: {
@@ -90,7 +91,7 @@ async function getRemoteCatalogSha() {
   });
 
   if (response.status === 404) {
-    return null;
+    return { sha: null, decodedContent: null };
   }
 
   const payload = await response.json().catch(() => ({}));
@@ -99,7 +100,17 @@ async function getRemoteCatalogSha() {
     throw new Error(message);
   }
 
-  return payload?.sha || null;
+  const base64Content = typeof payload?.content === "string"
+    ? payload.content.replace(/\n/g, "")
+    : "";
+  const decodedContent = base64Content
+    ? Buffer.from(base64Content, "base64").toString("utf-8")
+    : null;
+
+  return {
+    sha: payload?.sha || null,
+    decodedContent
+  };
 }
 
 async function commitCatalogToGithub(catalog, actorEmail = "admin@mummyj2treats.com") {
@@ -111,8 +122,17 @@ async function commitCatalogToGithub(catalog, actorEmail = "admin@mummyj2treats.
     };
   }
 
-  const sha = await getRemoteCatalogSha();
+  const snapshot = await getRemoteCatalogSnapshot();
   const content = `${JSON.stringify(sanitizeCatalog(catalog), null, 2)}\n`;
+
+  if (snapshot.decodedContent === content) {
+    return {
+      enabled: true,
+      committed: false,
+      message: "No changes detected in catalog.json"
+    };
+  }
+
   const body = {
     message: `chore(catalog): update catalog.json (${new Date().toISOString()})`,
     content: Buffer.from(content, "utf-8").toString("base64"),
@@ -123,8 +143,8 @@ async function commitCatalogToGithub(catalog, actorEmail = "admin@mummyj2treats.
     }
   };
 
-  if (sha) {
-    body.sha = sha;
+  if (snapshot.sha) {
+    body.sha = snapshot.sha;
   }
 
   const response = await githubRequest(buildGithubContentUrl(), {
