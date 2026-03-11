@@ -1,6 +1,24 @@
 // menu.js
 // Dynamic menu loading and display functionality
 import { openModal } from "./modal.js";
+import { addItemToCart, updateCartBadge } from "./cart-store.js";
+
+function showAddToCartToast(message) {
+  const existing = document.getElementById("cart-toast");
+  const toast = existing || document.createElement("div");
+  toast.id = "cart-toast";
+  toast.className = "cart-toast";
+  toast.textContent = message;
+
+  if (!existing) {
+    document.body.appendChild(toast);
+  }
+
+  toast.classList.add("show");
+  window.setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2200);
+}
 
 export async function loadMenu(container) {
   if (!container) {
@@ -105,7 +123,10 @@ export async function loadMenu(container) {
           <h3>${item.name}</h3>
           <p>${item.desc}</p>
           <p class="price">${item.price}</p>
-          <button data-modal="${item.id}" class="view-details" aria-label="View details for ${item.name}">View Details</button>
+          <div class="card-actions">
+            <button data-modal="${item.id}" class="view-details" aria-label="View details for ${item.name}">View Details</button>
+            <button data-add-cart="${item.id}" class="add-to-cart" aria-label="Add ${item.name} to cart">Add to Cart</button>
+          </div>
         </div>
       </article>
     `
@@ -125,6 +146,21 @@ export async function loadMenu(container) {
           e.preventDefault();
           openModal(btn.dataset.modal, items);
         }
+      });
+    });
+
+    document.querySelectorAll("[data-add-cart]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const item = items.find((entry) => entry.id == btn.dataset.addCart);
+        if (!item) {
+          return;
+        }
+
+        addItemToCart(item);
+        updateCartBadge();
+        showAddToCartToast(`${item.name} added to cart`);
       });
     });
 

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Review and checkout items in your mummyj2Treats cart.">
+    <meta name="author" content="Henry M Ugochukwu">
+    <title>Your Cart | mummyj2Treats</title>
+    <link rel="icon" type="image/png" href="favicon/mummyj2logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles/base.css">
+</head>
+
+<body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <header>
+        <a class="logo" href="index.html" aria-label="mummyj2Treats home page">
+            <img src="favicon/mummyj2logo.png" alt="mummyj2Treats logo" width="44" height="44">
+            <span>mummyj2Treats</span>
+        </a>
+        <nav aria-label="Main navigation">
+            <button class="hamburger" aria-label="Toggle menu" aria-expanded="false" aria-controls="main-nav">
+                <span aria-hidden="true">☰</span>
+            </button>
+            <ul id="main-nav">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="menu.html">Menu & Services</a></li>
+                <li><a href="about.html">About & Contact</a></li>
+                <li><a href="cart.html" aria-current="page">Cart</a></li>
+            </ul>
+        </nav>
+        <a class="cart-link" href="cart.html" aria-label="View cart">
+            <span>Cart</span>
+            <span class="cart-count" id="cart-count">0</span>
+        </a>
+    </header>
+
+    <main id="main-content" class="cart-page">
+        <section class="cart-layout" aria-label="Shopping cart">
+            <div class="cart-main">
+                <h1>Your Cart</h1>
+                <p class="cart-subtitle">Review your order before checkout.</p>
+                <div id="cart-items" class="cart-items" aria-live="polite"></div>
+
+                <section class="saved-section" aria-label="Saved for later">
+                    <h2>Saved for later</h2>
+                    <div id="saved-items" class="saved-items"></div>
+                </section>
+
+                <section class="upsell-section" aria-label="You may also like">
+                    <h2>You May Also Like</h2>
+                    <div id="upsell-track" class="upsell-track"></div>
+                </section>
+            </div>
+
+            <aside class="order-summary" aria-label="Order summary">
+                <div class="express-checkout">
+                    <h2>Express Checkout</h2>
+                    <div class="express-buttons">
+                        <button type="button" class="express apple">Apple Pay</button>
+                        <button type="button" class="express google">Google Pay</button>
+                        <button type="button" class="express paypal">PayPal</button>
+                    </div>
+                </div>
+
+                <div class="summary-lines">
+                    <div class="line-item"><span>Subtotal</span><strong id="subtotal">₦0</strong></div>
+                    <div class="line-item"><span>Estimated Shipping</span><strong id="shipping">₦0</strong></div>
+                    <div class="shipping-progress">
+                        <p id="shipping-progress-text">Add ₦15,000 for free shipping</p>
+                        <div class="shipping-progress-bar">
+                            <span id="shipping-progress-fill"></span>
+                        </div>
+                    </div>
+                    <div class="line-item"><span>Estimated Tax</span><strong id="tax">₦0</strong></div>
+                    <div class="line-item total"><span>Order Total</span><strong id="order-total">₦0</strong></div>
+                </div>
+
+                <button type="button" class="promo-toggle" id="promo-toggle" aria-expanded="false">Have a promo code?</button>
+                <div id="promo-field" hidden>
+                    <label for="promo-input" class="sr-only">Promo code</label>
+                    <input id="promo-input" type="text" placeholder="Enter code">
+                    <button type="button" class="btn btn-primary">Apply</button>
+                </div>
+
+                <button type="button" class="btn btn-primary checkout-btn">Proceed to Checkout</button>
+
+                <div class="trust-badges" aria-label="Trust badges">
+                    <span>Secure Checkout</span>
+                    <span>30-Day Returns</span>
+                    <span>Visa</span>
+                    <span>Apple Pay</span>
+                    <span>PayPal</span>
+                </div>
+            </aside>
+        </section>
+    </main>
+
+    <div class="mobile-checkout-bar" aria-label="Mobile checkout bar">
+        <div>
+            <p>Total</p>
+            <strong id="mobile-total">₦0</strong>
+        </div>
+        <button type="button" class="btn btn-primary">Checkout</button>
+    </div>
+
+    <div id="cart-toast" class="cart-toast" role="status" aria-live="polite"></div>
+
+    <footer>
+        <p>© 2026 mummyj2Treats • <a href="attributions.html">Attributions</a></p>
+    </footer>
+
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/cart.js"></script>
+</body>
+
+</html>

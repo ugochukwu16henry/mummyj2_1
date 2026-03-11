@@ -2,8 +2,11 @@
 // Main application entry point for Mummy J's Treats website
 import { loadMenu } from "./menu.js";
 import { openModal, closeModal } from "./modal.js";
+import { updateCartBadge } from "./cart-store.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  updateCartBadge();
+
   // Hamburger menu toggle with accessibility
   const hamburger = document.querySelector(".hamburger");
   const navUL = document.querySelector("nav ul");
