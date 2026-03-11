@@ -57,6 +57,29 @@
             <div id="menu-grid" class="grid" role="region" aria-label="Featured menu items"></div>
         </section>
 
+        <section class="featured-section" aria-label="Customer Stories">
+            <h2>What Our Customers Say</h2>
+            <div id="home-testimonials" class="grid" aria-live="polite"></div>
+            <form id="testimonial-form" class="testimonial-form" novalidate>
+                <h3>Share Your Experience</h3>
+                <p>Leave a short testimony. We’ll review and publish it on our stories page.</p>
+                <label>Your Name
+                    <input type="text" id="testimonial-name" required>
+                </label>
+                <label>Your Testimony
+                    <textarea id="testimonial-message" rows="3" required></textarea>
+                </label>
+                <label>Photo URL (optional)
+                    <input type="url" id="testimonial-image" placeholder="Link to your picture (Instagram, Google Photos, etc.)">
+                </label>
+                <label>Short Video URL (optional)
+                    <input type="url" id="testimonial-video" placeholder="YouTube, Instagram reel, etc.">
+                </label>
+                <button type="submit" class="btn btn-primary">Submit Testimony</button>
+                <p id="testimonial-status" class="testimonial-status" aria-live="polite"></p>
+            </form>
+        </section>
+
         <section class="cta-section">
             <h2>We Deliver Anywhere in Uyo!</h2>
             <p>Free delivery on orders above ₦15,000</p>
@@ -70,7 +93,7 @@
 
     <footer>
         <p>© 2025 mummyj2Treats • <a href="https://www.youtube.com/watch?v=ikWw31TClzg" target="_blank">Video
-                Youtube Video</a> • <a href="attributions.html">Attributions</a> • <a href="admin.html">Admin</a></p>
+                Youtube Video</a> • <a href="testimonials.html">Customer Stories</a> • <a href="attributions.html">Attributions</a> • <a href="admin.html">Admin</a></p>
     </footer>
 
     <!-- Modal -->

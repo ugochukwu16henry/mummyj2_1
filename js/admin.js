@@ -44,6 +44,9 @@ const stockFilterButtons = Array.from(document.querySelectorAll("button[data-sto
 const accountEmail = document.getElementById("account-email");
 const accountForm = document.getElementById("account-form");
 const accountMessage = document.getElementById("account-message");
+const pendingTestimonials = document.getElementById("pending-testimonials");
+const blogForm = document.getElementById("blog-form");
+const blogMessage = document.getElementById("blog-message");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
 
@@ -410,6 +413,36 @@ async function loadAccount() {
     }
   } catch {
     // ignore – account section is optional
+  }
+}
+
+async function loadContent() {
+  if (!pendingTestimonials) {
+    return;
+  }
+
+  try {
+    const payload = await apiFetch("/admin/content");
+    const testimonials = Array.isArray(payload.testimonials) ? payload.testimonials : [];
+    const pending = testimonials.filter((t) => !t.approved);
+
+    if (!pending.length) {
+      pendingTestimonials.innerHTML = "<p>No pending testimonials.</p>";
+      return;
+    }
+
+    pendingTestimonials.innerHTML = pending
+      .map((t) => `
+        <div>
+          <strong>${t.name}</strong><br>
+          <small>${new Date(t.createdAt || Date.now()).toLocaleString()}</small>
+          <p>${t.message}</p>
+          <button type="button" class="btn mini" data-approve-testimonial="${t.id}">Approve</button>
+        </div>
+      `)
+      .join("");
+  } catch (error) {
+    pendingTestimonials.innerHTML = `<p>Could not load testimonials: ${error.message}</p>`;
   }
 }
 
@@ -914,6 +947,55 @@ if (accountForm) {
   });
 }
 
+if (pendingTestimonials) {
+  pendingTestimonials.addEventListener("click", async (event) => {
+    const button = event.target.closest("button[data-approve-testimonial]");
+    if (!button) return;
+
+    const id = button.dataset.approveTestimonial;
+    try {
+      await apiFetch(`/admin/testimonials/${id}/approve`, { method: "POST" });
+      await loadContent();
+    } catch (error) {
+      alert(error.message || "Could not approve testimonial");
+    }
+  });
+}
+
+if (blogForm && blogMessage) {
+  blogForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    blogMessage.textContent = "";
+
+    const title = document.getElementById("blog-title").value.trim();
+    const body = document.getElementById("blog-body").value.trim();
+    const imageUrl = document.getElementById("blog-image").value.trim();
+    const videoUrl = document.getElementById("blog-video").value.trim();
+
+    if (!title || !body) {
+      blogMessage.textContent = "Title and body are required.";
+      blogMessage.classList.remove("ok");
+      blogMessage.classList.add("error");
+      return;
+    }
+
+    try {
+      await apiFetch("/admin/posts", {
+        method: "POST",
+        body: JSON.stringify({ title, body, imageUrl, videoUrl })
+      });
+      blogForm.reset();
+      blogMessage.textContent = "Post published. It now appears on the stories page.";
+      blogMessage.classList.remove("error");
+      blogMessage.classList.add("ok");
+    } catch (error) {
+      blogMessage.textContent = error.message || "Could not publish post.";
+      blogMessage.classList.remove("ok");
+      blogMessage.classList.add("error");
+    }
+  });
+}
+
 searchInput.addEventListener("input", applyFilter);
 
 stockFilterButtons.forEach((button) => {
@@ -937,6 +1019,7 @@ renderSchemaForm();
     showDashboard();
     await loadCatalog();
     await loadAccount();
+    await loadContent();
   } catch (_error) {
     localStorage.removeItem(TOKEN_KEY);
     state.token = "";

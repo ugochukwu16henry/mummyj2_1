@@ -114,6 +114,33 @@
             <p id="account-message" class="account-message" aria-live="polite"></p>
           </form>
         </article>
+
+        <article class="panel content-panel">
+          <h2>Stories & Blog</h2>
+          <section>
+            <h3>Pending Testimonials</h3>
+            <div id="pending-testimonials" class="category-list"></div>
+          </section>
+          <section>
+            <h3>Add Blog Post</h3>
+            <form id="blog-form" class="account-form">
+              <label>Title
+                <input type="text" id="blog-title" required>
+              </label>
+              <label>Body
+                <textarea id="blog-body" rows="3" required></textarea>
+              </label>
+              <label>Image URL (optional)
+                <input type="url" id="blog-image">
+              </label>
+              <label>Video URL (optional)
+                <input type="url" id="blog-video">
+              </label>
+              <button type="submit" class="btn primary">Publish Post</button>
+              <p id="blog-message" class="account-message" aria-live="polite"></p>
+            </form>
+          </section>
+        </article>
       </section>
     </section>
 

@@ -17,6 +17,7 @@ const GITHUB_CATALOG_PATH = process.env.GITHUB_CATALOG_PATH || "data/catalog.jso
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const CATALOG_PATH = path.resolve(__dirname, "../data/catalog.json");
+const CONTENT_PATH = path.resolve(__dirname, "../data/content.json");
 const AUTH_CONFIG_PATH = path.resolve(__dirname, "../data/admin-auth.json");
 
 app.use(cors());
@@ -56,6 +57,36 @@ async function readCatalog() {
 async function writeCatalog(catalog) {
   const output = `${JSON.stringify(sanitizeCatalog(catalog), null, 2)}\n`;
   await fs.writeFile(CATALOG_PATH, output, "utf-8");
+}
+
+async function readContent() {
+  try {
+    const raw = await fs.readFile(CONTENT_PATH, "utf-8");
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") {
+      throw new Error("Invalid content file");
+    }
+    return {
+      testimonials: Array.isArray(parsed.testimonials) ? parsed.testimonials : [],
+      posts: Array.isArray(parsed.posts) ? parsed.posts : []
+    };
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return { testimonials: [], posts: [] };
+    }
+    console.warn("Failed to read content.json:", error.message);
+    return { testimonials: [], posts: [] };
+  }
+}
+
+async function writeContent(nextContent) {
+  const safe = {
+    testimonials: Array.isArray(nextContent.testimonials) ? nextContent.testimonials : [],
+    posts: Array.isArray(nextContent.posts) ? nextContent.posts : []
+  };
+  const output = `${JSON.stringify(safe, null, 2)}\n`;
+  await fs.writeFile(CONTENT_PATH, output, "utf-8");
+  return safe;
 }
 
 function isGithubSyncEnabled() {
@@ -275,6 +306,84 @@ app.post("/api/auth/change-credentials", authMiddleware, async (req, res) => {
     ok: true,
     email: nextAuth.email
   });
+});
+
+app.get("/api/content", async (_req, res) => {
+  const content = await readContent();
+  const approvedTestimonials = content.testimonials.filter((item) => item.approved);
+  const publishedPosts = content.posts.filter((post) => post.published);
+  res.json({
+    testimonials: approvedTestimonials,
+    posts: publishedPosts
+  });
+});
+
+app.post("/api/testimonials", async (req, res) => {
+  const { name, message, imageUrl, videoUrl } = req.body || {};
+
+  if (!name || !message) {
+    return res.status(400).json({ error: "Name and message are required" });
+  }
+
+  const content = await readContent();
+  const testimonial = {
+    id: `t-${Date.now()}`,
+    name: String(name).trim(),
+    message: String(message).trim(),
+    imageUrl: imageUrl ? String(imageUrl).trim() : "",
+    videoUrl: videoUrl ? String(videoUrl).trim() : "",
+    createdAt: new Date().toISOString(),
+    approved: false
+  };
+
+  content.testimonials.unshift(testimonial);
+  await writeContent(content);
+
+  res.status(201).json({ ok: true, testimonial });
+});
+
+app.get("/api/admin/content", authMiddleware, async (_req, res) => {
+  const content = await readContent();
+  res.json(content);
+});
+
+app.post("/api/admin/testimonials/:id/approve", authMiddleware, async (req, res) => {
+  const { id } = req.params;
+  const content = await readContent();
+  const index = content.testimonials.findIndex((item) => item.id === id);
+  if (index < 0) {
+    return res.status(404).json({ error: "Testimonial not found" });
+  }
+
+  content.testimonials[index].approved = true;
+  content.testimonials[index].approvedAt = new Date().toISOString();
+  await writeContent(content);
+
+  res.json({ ok: true, testimonial: content.testimonials[index] });
+});
+
+app.post("/api/admin/posts", authMiddleware, async (req, res) => {
+  const { title, body, imageUrl, videoUrl } = req.body || {};
+
+  if (!title || !body) {
+    return res.status(400).json({ error: "Title and body are required" });
+  }
+
+  const content = await readContent();
+  const post = {
+    id: `p-${Date.now()}`,
+    title: String(title).trim(),
+    body: String(body).trim(),
+    imageUrl: imageUrl ? String(imageUrl).trim() : "",
+    videoUrl: videoUrl ? String(videoUrl).trim() : "",
+    createdAt: new Date().toISOString(),
+    published: true
+  };
+
+  content.posts.unshift(post);
+  await writeContent(content);
+
+  res.status(201).json({ ok: true, post });
 });
 
 app.get("/api/products", authMiddleware, async (_req, res) => {
