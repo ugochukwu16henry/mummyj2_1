@@ -27,22 +27,6 @@
       "last_updated": "2026-03-12"
     },
     {
-      "id": "p001",
-      "name": "Chocolate Fudge Cake",
-      "price": 18000,
-      "category": "Cakes",
-      "tags": [
-        "cake",
-        "chocolate"
-      ],
-      "stock": 12,
-      "description": "Rich chocolate layers with ganache",
-      "image": "images/cake1.png",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
-    },
-    {
       "id": "p002",
       "name": "Red Velvet Cake",
       "price": 20000,
@@ -139,22 +123,6 @@
       "order_only": false
     },
     {
-      "id": "p010",
-      "name": "Mosa (10)",
-      "price": 3000,
-      "category": "Small Chops",
-      "tags": [
-        "small chops",
-        "plantain"
-      ],
-      "stock": 25,
-      "description": "Plantain and fish",
-      "image": "images/mosa.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
-    },
-    {
       "id": "p011",
       "name": "Parfait (Large)",
       "price": 4500,
@@ -185,38 +153,6 @@
       "last_updated": "2026-03-11",
       "out_of_stock": false,
       "order_only": true
-    },
-    {
-      "id": "p014",
-      "name": "Jollof Rice Plate",
-      "price": 1800,
-      "category": "Meals",
-      "tags": [
-        "meal",
-        "rice"
-      ],
-      "stock": 22,
-      "description": "With chicken and plantain",
-      "image": "images/jollof.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
-    },
-    {
-      "id": "p015",
-      "name": "Egusi Soup and Pounded Yam",
-      "price": 2500,
-      "category": "Meals",
-      "tags": [
-        "meal",
-        "traditional"
-      ],
-      "stock": 18,
-      "description": "Traditional delicacy",
-      "image": "images/egusi.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
     }
   ],
   "category_images": {
