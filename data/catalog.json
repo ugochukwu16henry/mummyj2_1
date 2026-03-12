@@ -278,8 +278,11 @@
       "customerName": "Henry Ugochukwu",
       "phone": "0803 835 5522",
       "notes": "Bank transfer submitted by Henry Ugochukwu",
-      "status": "awaiting_bank_transfer",
-      "createdAt": "2026-03-12T20:56:25.417Z"
+      "status": "flagged",
+      "createdAt": "2026-03-12T20:56:25.417Z",
+      "flaggedAt": "2026-03-12T21:57:44.790Z",
+      "flaggedBy": "ugochukwuhenry16@gmail.com",
+      "flaggedReason": "hg"
     },
     {
       "orderId": "ORD-AUDIT",
