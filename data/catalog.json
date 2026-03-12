@@ -150,9 +150,9 @@
       "stock": 28,
       "description": "Spicy beef filling",
       "image": "images/samosa.jpg",
-      "last_updated": "2026-03-11",
+      "last_updated": "2026-03-12",
       "out_of_stock": false,
-      "order_only": true
+      "order_only": false
     },
     {
       "id": "p010",
