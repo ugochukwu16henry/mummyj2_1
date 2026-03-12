@@ -224,6 +224,19 @@
   },
   "orders": [
     {
+      "orderId": "ORD-1773352081269",
+      "productId": "p011",
+      "productName": "Parfait (Large) x3",
+      "qty": 3,
+      "date": "",
+      "time": "",
+      "customerName": "Obi John",
+      "phone": "09015718484",
+      "notes": "Bank transfer submitted by Obi John. Items: Parfait (Large) x3",
+      "status": "awaiting_bank_transfer",
+      "createdAt": "2026-03-12T21:48:01.269Z"
+    },
+    {
       "orderId": "ORD-1773350424846",
       "productId": "p011",
       "productName": "Parfait (Large) x5",
