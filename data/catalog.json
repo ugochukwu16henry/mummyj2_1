@@ -139,22 +139,6 @@
       "order_only": true
     },
     {
-      "id": "p009",
-      "name": "Samosa (10)",
-      "price": 4000,
-      "category": "Small Chops",
-      "tags": [
-        "small chops",
-        "beef"
-      ],
-      "stock": 28,
-      "description": "Spicy beef filling",
-      "image": "images/samosa.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": false,
-      "order_only": true
-    },
-    {
       "id": "p010",
       "name": "Mosa (10)",
       "price": 3000,
@@ -230,22 +214,6 @@
       "stock": 18,
       "description": "Traditional delicacy",
       "image": "images/egusi.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
-    },
-    {
-      "id": "p016",
-      "name": "Wedding Package (50 Guests)",
-      "price": 150000,
-      "category": "Events",
-      "tags": [
-        "events",
-        "package"
-      ],
-      "stock": 5,
-      "description": "Cake, small chops and drinks",
-      "image": "images/wedding.jpg",
       "last_updated": "2026-03-11",
       "out_of_stock": true,
       "order_only": false
