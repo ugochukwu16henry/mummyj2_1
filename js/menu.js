@@ -246,7 +246,6 @@ export async function loadMenu(container) {
       }
     }
 
-    const rawPayload = rawPayload;
     const items = normalizeCatalogPayload(rawPayload)
       .slice()
       .sort((a, b) => {

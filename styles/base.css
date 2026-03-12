@@ -780,7 +780,7 @@ select:invalid:not(:placeholder-shown) {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.45rem;
+    gap: 0.3rem;
     color: #fff;
     text-decoration: none;
     font-weight: 700;
@@ -809,6 +809,11 @@ select:invalid:not(:placeholder-shown) {
     font-size: 0.78rem;
     font-weight: 700;
     padding: 0 0.35rem;
+}
+
+.cart-icon {
+    font-size: 1.2rem;
+    line-height: 1;
 }
 
 .card-actions {

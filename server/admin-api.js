@@ -479,6 +479,50 @@ app.get("/api/catalog-public", async (_req, res) => {
   }
 });
 
+// Admin export/import utilities for backups
+app.get("/api/admin/catalog/export", authMiddleware, async (_req, res) => {
+  try {
+    const catalog = await readCatalog();
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", 'attachment; filename="catalog.json"');
+    res.send(JSON.stringify(catalog, null, 2));
+  } catch (error) {
+    res.status(500).json({ error: "Could not export catalog.json" });
+  }
+});
+
+app.post("/api/admin/catalog/import", authMiddleware, async (req, res) => {
+  try {
+    const incoming = req.body || {};
+    await writeCatalog(incoming);
+    const github = await commitCatalogToGithub(incoming, req.user?.email);
+    res.json({ ok: true, github });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Could not import catalog.json" });
+  }
+});
+
+app.get("/api/admin/content/export", authMiddleware, async (_req, res) => {
+  try {
+    const content = await readContent();
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Content-Disposition", 'attachment; filename="content.json"');
+    res.send(JSON.stringify(content, null, 2));
+  } catch (error) {
+    res.status(500).json({ error: "Could not export content.json" });
+  }
+});
+
+app.post("/api/admin/content/import", authMiddleware, async (req, res) => {
+  try {
+    const incoming = req.body || {};
+    const safe = await writeContent(incoming);
+    res.json({ ok: true, content: safe });
+  } catch (error) {
+    res.status(500).json({ error: error.message || "Could not import content.json" });
+  }
+});
+
 app.put("/api/catalog", authMiddleware, async (req, res) => {
   try {
     await writeCatalog(req.body);

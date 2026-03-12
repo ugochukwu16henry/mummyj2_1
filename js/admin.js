@@ -55,13 +55,16 @@ const blogImageClearBtn = document.getElementById("blog-image-clear");
 const blogPostsAdmin = document.getElementById("blog-posts-admin");
 const ordersTable = document.getElementById("orders-table");
 const ordersPanel = document.getElementById("orders-panel");
+const exportCatalogBtn = document.getElementById("export-catalog-btn");
+const exportContentBtn = document.getElementById("export-content-btn");
 
 const IMAGE_LIMITS = {
   product: { maxWidth: 1200, maxHeight: 1200, quality: 0.78 },
   category: { maxWidth: 720, maxHeight: 720, quality: 0.74 },
   preview: { maxWidth: 360, maxHeight: 360, quality: 0.7 }
 };
-const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // 8MB per image (catalog/category)
+const MAX_BLOG_IMAGE_BYTES = 5 * 1024 * 1024; // 5MB per blog cover image
 
 function formatBytes(bytes) {
   if (!Number.isFinite(bytes) || bytes <= 0) {
@@ -1163,6 +1166,14 @@ if (blogForm && blogMessage) {
     const body = document.getElementById("blog-body").value.trim();
     const imageFile = document.getElementById("blog-image-file")?.files?.[0] || null;
 
+    if (imageFile && imageFile.size > MAX_BLOG_IMAGE_BYTES) {
+      const maxMb = formatBytes(MAX_BLOG_IMAGE_BYTES);
+      blogMessage.textContent = `Image is too large. Max allowed is ${maxMb}.`;
+      blogMessage.classList.remove("ok");
+      blogMessage.classList.add("error");
+      return;
+    }
+
     if (!title || !body) {
       blogMessage.textContent = "Title and body are required.";
       blogMessage.classList.remove("ok");
@@ -1240,6 +1251,29 @@ if (blogPostsAdmin) {
     } catch (error) {
       alert(error.message || "Could not delete post");
     }
+  });
+}
+
+// Simple export helpers for backing up JSON files
+function triggerDownload(path, filename) {
+  const url = `${API_BASE}${path}`;
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+if (exportCatalogBtn) {
+  exportCatalogBtn.addEventListener("click", () => {
+    triggerDownload("/admin/catalog/export", "catalog.json");
+  });
+}
+
+if (exportContentBtn) {
+  exportContentBtn.addEventListener("click", () => {
+    triggerDownload("/admin/content/export", "content.json");
   });
 }
 

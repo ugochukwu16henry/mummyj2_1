@@ -1,5 +1,7 @@
 // modal.js
 // Modal dialog functionality for displaying menu item details
+import { addItemToCart, updateCartBadge } from "./cart-store.js";
+
 const modal = document.getElementById("item-modal");
 const modalContent = document.getElementById("modal-body");
 const closeBtn = document.querySelector(".close");
@@ -28,7 +30,9 @@ export function openModal(id, dataArray) {
       <p><strong>Price:</strong> <span class="price">${item.price}</span></p>
       <p style="margin-top:1rem;">${item.desc}</p>
     </div>
-    <a href="about.html#contact" class="btn btn-primary" style="display:inline-block;text-align:center;">Contact Us</a>
+    <button type="button" id="modal-add-to-cart" class="btn btn-primary" style="display:inline-block;text-align:center;">
+      ${item.outOfStock ? "Out of Stock" : "Add to Cart"}
+    </button>
   `;
 
   // Show modal with proper ARIA attributes
@@ -44,6 +48,26 @@ export function openModal(id, dataArray) {
 
   // Prevent body scroll when modal is open
   document.body.style.overflow = "hidden";
+
+  // Wire up Add to Cart behavior
+  const addBtn = document.getElementById("modal-add-to-cart");
+  if (addBtn) {
+    if (item.outOfStock) {
+      addBtn.disabled = true;
+    } else {
+      addBtn.disabled = false;
+      addBtn.addEventListener(
+        "click",
+        () => {
+          addItemToCart(item);
+          updateCartBadge();
+          closeModal();
+          window.location.href = "cart.html";
+        },
+        { once: true }
+      );
+    }
+  }
 }
 
 export function closeModal() {

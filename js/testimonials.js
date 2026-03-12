@@ -2,6 +2,8 @@ const API_BASE = window.location.hostname === "localhost"
   ? "http://localhost:5050/api"
   : "/api";
 
+const MAX_TESTIMONIAL_IMAGE_BYTES = 4 * 1024 * 1024; // 4MB
+
 async function fetchContent() {
   const response = await fetch(`${API_BASE}/content`);
   if (!response.ok) {
@@ -347,7 +349,7 @@ function setupTestimonialForm() {
     const message = String(messageField?.value || "").trim();
     const imageFile = imageInput?.files?.[0] || null;
 
-    const imageError = validateFileSize(imageFile, 3 * 1024 * 1024);
+    const imageError = validateFileSize(imageFile, MAX_TESTIMONIAL_IMAGE_BYTES);
     if (imageError) {
       status.textContent = imageError;
       return;
