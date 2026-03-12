@@ -12,6 +12,11 @@ import {
   updateCartBadge
 } from "./cart-store.js";
 
+const API_BASE =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5050/api"
+    : "https://mummyj21-frontend-production.up.railway.app/api";
+
 const SHIPPING_THRESHOLD = 15000;
 const SHIPPING_FEE = 2500;
 const TAX_RATE = 0.075;
@@ -174,7 +179,7 @@ function setupCheckoutForm() {
         createdAt
       };
 
-      const response = await fetch("/api/orders", {
+      const response = await fetch(`${API_BASE}/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

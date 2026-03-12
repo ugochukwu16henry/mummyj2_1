@@ -62,6 +62,7 @@ const ordersFilterButtons = Array.from(document.querySelectorAll("button[data-or
 const ordersQueueMeta = document.getElementById("orders-queue-meta");
 const exportCatalogBtn = document.getElementById("export-catalog-btn");
 const exportContentBtn = document.getElementById("export-content-btn");
+let ordersRefreshTimer = null;
 
 const IMAGE_LIMITS = {
   product: { maxWidth: 1200, maxHeight: 1200, quality: 0.78 },
@@ -750,6 +751,42 @@ async function loadCatalog() {
   renderJsonPreview();
 }
 
+async function loadOrdersOnly() {
+  const payload = await apiFetch("/orders");
+  state.catalog = {
+    ...state.catalog,
+    orders: Array.isArray(payload.orders) ? payload.orders : []
+  };
+  renderOrders();
+  renderJsonPreview();
+}
+
+function startOrdersAutoRefresh() {
+  if (ordersRefreshTimer) {
+    clearInterval(ordersRefreshTimer);
+  }
+
+  ordersRefreshTimer = setInterval(async () => {
+    if (!state.token || dashboard.hidden) {
+      return;
+    }
+
+    try {
+      await loadOrdersOnly();
+    } catch {
+      // ignore transient refresh errors
+    }
+  }, 15000);
+}
+
+function stopOrdersAutoRefresh() {
+  if (!ordersRefreshTimer) {
+    return;
+  }
+  clearInterval(ordersRefreshTimer);
+  ordersRefreshTimer = null;
+}
+
 async function saveCatalog() {
   showSyncing(true);
   try {
@@ -807,6 +844,7 @@ loginForm.addEventListener("submit", async (event) => {
     state.currentAdminEmail = email || state.currentAdminEmail;
     showDashboard();
     await loadCatalog();
+    startOrdersAutoRefresh();
   } catch (error) {
     loginError.textContent = error.message;
   }
@@ -1232,6 +1270,7 @@ commitBtn.addEventListener("click", async () => {
 logoutBtn.addEventListener("click", () => {
   localStorage.removeItem(TOKEN_KEY);
   state.token = "";
+  stopOrdersAutoRefresh();
   showLogin();
 });
 
@@ -1577,9 +1616,11 @@ renderSchemaForm();
     await loadCatalog();
     await loadAccount();
     await loadContent();
+    startOrdersAutoRefresh();
   } catch (_error) {
     localStorage.removeItem(TOKEN_KEY);
     state.token = "";
+    stopOrdersAutoRefresh();
     showLogin();
   }
 })();
