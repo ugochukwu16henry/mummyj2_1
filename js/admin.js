@@ -320,6 +320,28 @@ function getStockLabel(product) {
   return product.stock > 10 ? "In Stock" : "Low Stock";
 }
 
+function getPaymentLabel(order) {
+  const method = String(order.paymentMethod || "").toLowerCase();
+  if (method === "bank_transfer") {
+    return "Bank Transfer";
+  }
+  if (!method) {
+    return "-";
+  }
+  return method.replace(/_/g, " ");
+}
+
+function getOrderStatusClass(status) {
+  const normalized = String(status || "pending").toLowerCase();
+  if (normalized === "confirmed" || normalized === "paid") {
+    return "paid";
+  }
+  if (normalized === "flagged" || normalized === "failed") {
+    return "flagged";
+  }
+  return "pending";
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
@@ -357,7 +379,7 @@ function renderOrders() {
   orders.sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
 
   if (!orders.length) {
-    ordersTable.innerHTML = '<tr><td colspan="8">No customer orders yet.</td></tr>';
+    ordersTable.innerHTML = '<tr><td colspan="14">No customer orders yet.</td></tr>';
     return;
   }
 
@@ -366,7 +388,17 @@ function renderOrders() {
       <td class="mono">${order.orderId || "-"}</td>
       <td>${order.productName || "-"}</td>
       <td>${order.customerName || "-"}</td>
+      <td>${order.customerEmail || "-"}</td>
       <td>${order.phone || "-"}</td>
+      <td>${getPaymentLabel(order)}</td>
+      <td><span class="status-badge ${getOrderStatusClass(order.status)}">${order.status || "pending"}</span></td>
+      <td class="mono">${Number(order.amountDue) > 0 ? formatCurrency(Number(order.amountDue)) : "-"}</td>
+      <td class="mono">${order.bankReference || "-"}</td>
+      <td>
+        ${order.receiptImage
+          ? `<a class="receipt-link" href="${order.receiptImage}" target="_blank" rel="noopener noreferrer">View</a>${String(order.receiptImage).startsWith("data:image") ? `<img class="receipt-thumb" src="${order.receiptImage}" alt="Receipt proof">` : ""}`
+          : "-"}
+      </td>
       <td>${order.qty || 1}</td>
       <td>${order.date || "-"}</td>
       <td>${order.time || "-"}</td>

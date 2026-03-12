@@ -395,6 +395,45 @@ pre {
   margin-top: 1rem;
 }
 
+.status-badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.16rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.status-badge.pending {
+  background: rgba(217, 119, 6, 0.22);
+  color: #ffd39b;
+}
+
+.status-badge.paid {
+  background: rgba(45, 179, 134, 0.2);
+  color: #54d7aa;
+}
+
+.status-badge.flagged {
+  background: rgba(255, 107, 107, 0.2);
+  color: #ff9f9f;
+}
+
+.receipt-link {
+  color: #c9d7ff;
+  text-decoration: underline;
+  font-size: 0.78rem;
+}
+
+.receipt-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  margin-top: 0.3rem;
+}
+
 .row-actions {
   display: flex;
   gap: 0.4rem;

@@ -101,7 +101,42 @@
                     <button type="button" class="btn btn-primary">Apply</button>
                 </div>
 
-                <button type="button" class="btn btn-primary checkout-btn">Proceed to Checkout</button>
+                <button type="button" class="btn btn-primary checkout-btn" data-open-checkout>Proceed to Checkout</button>
+
+                <section id="checkout-panel" class="checkout-panel" aria-label="Order review and checkout" hidden>
+                    <h3>Order Review & Checkout</h3>
+                    <p class="checkout-panel-note">Complete your bank transfer and upload your receipt for verification.</p>
+
+                    <div class="bank-transfer-card" aria-label="Bank transfer account details">
+                        <p><strong>Bank:</strong> Opay</p>
+                        <p><strong>Account Number:</strong> 9068042947</p>
+                        <p><strong>Account Name:</strong> Marylou Ihechi Okechukwu</p>
+                    </div>
+
+                    <form id="checkout-form" class="checkout-form" novalidate>
+                        <label for="checkout-email">Email for order updates</label>
+                        <input id="checkout-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+
+                        <label for="checkout-name">Full Name</label>
+                        <input id="checkout-name" name="customerName" type="text" autocomplete="name" required placeholder="Your full name">
+
+                        <label for="checkout-phone">Phone Number</label>
+                        <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" required placeholder="08012345678">
+
+                        <label for="checkout-reference">Bank Transfer Reference</label>
+                        <input id="checkout-reference" name="bankReference" type="text" required placeholder="Session / transaction reference">
+
+                        <label for="checkout-receipt">Upload Receipt</label>
+                        <input id="checkout-receipt" name="receipt" type="file" accept="image/*,.pdf" required>
+                        <p id="checkout-receipt-name" class="checkout-meta" aria-live="polite"></p>
+
+                        <button type="submit" id="confirm-payment-btn" class="btn btn-primary checkout-confirm-btn">
+                            <span class="checkout-btn-label">Confirm Payment</span>
+                            <span class="checkout-btn-loading" aria-hidden="true">Processing...</span>
+                        </button>
+                        <p id="checkout-message" class="checkout-message" aria-live="polite"></p>
+                    </form>
+                </section>
 
                 <div class="trust-badges" aria-label="Trust badges">
                     <span>Secure Checkout</span>
@@ -119,7 +154,7 @@
             <p>Total</p>
             <strong id="mobile-subtotal">₦0</strong>
         </div>
-        <button type="button" class="btn btn-primary">Proceed to Checkout</button>
+        <button type="button" class="btn btn-primary" data-open-checkout>Proceed to Checkout</button>
     </div>
 
     <div id="cart-toast" class="cart-toast" role="status" aria-live="polite"></div>

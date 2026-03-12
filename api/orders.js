@@ -7,6 +7,20 @@ export default async function handler(req, res) {
       const catalog = await readCatalog();
       const orders = Array.isArray(catalog.orders) ? catalog.orders : [];
 
+      const parsedAmount = Number(incoming.amountDue);
+      const orderLines = Array.isArray(incoming.orderLines)
+        ? incoming.orderLines
+            .filter((line) => line && typeof line === "object")
+            .map((line) => ({
+              id: String(line.id || ""),
+              productId: String(line.productId || ""),
+              productName: String(line.productName || ""),
+              qty: Number(line.qty) > 0 ? Number(line.qty) : 1,
+              unitPrice: Number.isFinite(Number(line.unitPrice)) ? Number(line.unitPrice) : 0,
+              total: Number.isFinite(Number(line.total)) ? Number(line.total) : 0
+            }))
+        : [];
+
       const order = {
         orderId: String(incoming.orderId || `ORD-${Date.now()}`),
         productId: String(incoming.productId || ""),
@@ -15,9 +29,18 @@ export default async function handler(req, res) {
         date: String(incoming.date || ""),
         time: String(incoming.time || ""),
         customerName: String(incoming.customerName || ""),
+        customerEmail: String(incoming.customerEmail || ""),
         phone: String(incoming.phone || ""),
         notes: String(incoming.notes || ""),
         status: String(incoming.status || "pending"),
+        paymentMethod: String(incoming.paymentMethod || ""),
+        amountDue: Number.isFinite(parsedAmount) ? parsedAmount : 0,
+        bankName: String(incoming.bankName || ""),
+        bankAccountNumber: String(incoming.bankAccountNumber || ""),
+        bankAccountName: String(incoming.bankAccountName || ""),
+        bankReference: String(incoming.bankReference || ""),
+        receiptImage: String(incoming.receiptImage || ""),
+        orderLines,
         createdAt: incoming.createdAt || new Date().toISOString()
       };
 

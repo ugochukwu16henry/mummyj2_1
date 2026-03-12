@@ -1216,6 +1216,103 @@ select:invalid:not(:placeholder-shown) {
     letter-spacing: 0.02em;
 }
 
+.checkout-panel {
+    margin: 0 0 1rem;
+    background: #fff;
+    border: 1px solid rgba(61, 64, 91, 0.14);
+    border-radius: 14px;
+    padding: 1rem;
+}
+
+.checkout-panel h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1.1rem;
+    text-align: left;
+}
+
+.checkout-panel-note {
+    margin: 0 0 0.8rem;
+    color: rgba(61, 64, 91, 0.8);
+    font-size: 0.9rem;
+}
+
+.bank-transfer-card {
+    border: 1px solid rgba(61, 64, 91, 0.2);
+    border-radius: 12px;
+    padding: 0.8rem;
+    background: rgba(224, 122, 95, 0.08);
+    margin-bottom: 0.85rem;
+}
+
+.bank-transfer-card p {
+    margin: 0.2rem 0;
+    font-size: 0.92rem;
+}
+
+.checkout-form {
+    display: grid;
+    gap: 0.55rem;
+}
+
+.checkout-form label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.checkout-form input {
+    margin: 0;
+}
+
+.checkout-meta {
+    margin: 0;
+    color: rgba(61, 64, 91, 0.8);
+    font-size: 0.82rem;
+}
+
+.checkout-confirm-btn {
+    margin-top: 0.35rem;
+    position: relative;
+}
+
+.checkout-confirm-btn .checkout-btn-loading {
+    display: none;
+}
+
+.checkout-confirm-btn.is-processing {
+    opacity: 0.85;
+    pointer-events: none;
+}
+
+.checkout-confirm-btn.is-processing .checkout-btn-label {
+    display: none;
+}
+
+.checkout-confirm-btn.is-processing .checkout-btn-loading {
+    display: inline;
+}
+
+.checkout-message {
+    margin: 0.35rem 0 0;
+    font-size: 0.9rem;
+    color: rgba(61, 64, 91, 0.85);
+}
+
+.checkout-message.ok {
+    color: #2d9b72;
+    font-weight: 600;
+}
+
+.checkout-message.error {
+    color: #c65d48;
+    font-weight: 600;
+}
+
+body.cart-screen.checkout-focus nav,
+body.cart-screen.checkout-focus .cart-link {
+    display: none;
+}
+
 .trust-badges {
     display: flex;
     flex-wrap: wrap;
@@ -1587,9 +1684,12 @@ body.force-mobile .remove-item {
 
     .express-checkout,
     .order-summary .summary-lines,
-    .order-summary .checkout-btn,
     .order-summary .trust-badges {
         display: none;
+    }
+
+    .order-summary .checkout-panel {
+        display: block;
     }
 
     .mobile-checkout-bar {

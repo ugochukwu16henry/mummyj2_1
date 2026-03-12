@@ -7,6 +7,7 @@ import {
   moveSavedToCart,
   parsePrice,
   removeItemFromCart,
+  saveCartState,
   restoreRemovedItem,
   updateCartBadge
 } from "./cart-store.js";
@@ -28,6 +29,180 @@ const upsellList = document.getElementById("upsell-track");
 const promoToggle = document.getElementById("promo-toggle");
 const promoSection = document.getElementById("promo-field");
 const toast = document.getElementById("cart-toast");
+const checkoutPanel = document.getElementById("checkout-panel");
+const checkoutForm = document.getElementById("checkout-form");
+const checkoutMessage = document.getElementById("checkout-message");
+const checkoutEmailInput = document.getElementById("checkout-email");
+const checkoutReceiptInput = document.getElementById("checkout-receipt");
+const checkoutReceiptName = document.getElementById("checkout-receipt-name");
+const confirmPaymentButton = document.getElementById("confirm-payment-btn");
+
+async function fileToDataUrl(file) {
+  if (!file) {
+    return "";
+  }
+
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("Could not read receipt file"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function setCheckoutMessage(message, type = "") {
+  if (!checkoutMessage) {
+    return;
+  }
+
+  checkoutMessage.textContent = message;
+  checkoutMessage.classList.remove("ok", "error");
+  if (type) {
+    checkoutMessage.classList.add(type);
+  }
+}
+
+function setCheckoutProcessing(isProcessing) {
+  if (!confirmPaymentButton) {
+    return;
+  }
+  confirmPaymentButton.classList.toggle("is-processing", isProcessing);
+  confirmPaymentButton.disabled = isProcessing;
+}
+
+function openCheckoutPanel() {
+  const { items } = getCartState();
+  if (!items.length) {
+    showToast("Your cart is empty. Add items before checkout.");
+    return;
+  }
+
+  if (checkoutPanel) {
+    checkoutPanel.removeAttribute("hidden");
+    checkoutPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  document.body.classList.add("checkout-focus");
+  setCheckoutMessage("");
+
+  if (checkoutEmailInput && !checkoutEmailInput.value) {
+    checkoutEmailInput.focus();
+  }
+}
+
+function closeCheckoutPanel() {
+  if (checkoutPanel) {
+    checkoutPanel.setAttribute("hidden", "hidden");
+  }
+  document.body.classList.remove("checkout-focus");
+}
+
+function setupCheckoutForm() {
+  if (!checkoutForm) {
+    return;
+  }
+
+  checkoutReceiptInput?.addEventListener("change", () => {
+    const file = checkoutReceiptInput.files?.[0] || null;
+    if (checkoutReceiptName) {
+      checkoutReceiptName.textContent = file
+        ? `Selected receipt: ${file.name}`
+        : "";
+    }
+  });
+
+  checkoutForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const { items, saved } = getCartState();
+    if (!items.length) {
+      setCheckoutMessage("Your cart is empty. Add products before checkout.", "error");
+      return;
+    }
+
+    const receiptFile = checkoutReceiptInput?.files?.[0] || null;
+    if (!receiptFile) {
+      setCheckoutMessage("Please upload your bank transfer receipt.", "error");
+      return;
+    }
+
+    const email = String(document.getElementById("checkout-email")?.value || "").trim();
+    const customerName = String(document.getElementById("checkout-name")?.value || "").trim();
+    const phone = String(document.getElementById("checkout-phone")?.value || "").trim();
+    const bankReference = String(document.getElementById("checkout-reference")?.value || "").trim();
+
+    if (!email || !customerName || !phone || !bankReference) {
+      setCheckoutMessage("Please fill all checkout fields.", "error");
+      return;
+    }
+
+    setCheckoutProcessing(true);
+    setCheckoutMessage("Submitting payment confirmation...");
+
+    try {
+      const receiptUrl = await fileToDataUrl(receiptFile);
+      const totals = calcTotals(items);
+      const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+      const orderId = `ORD-${Date.now()}`;
+      const createdAt = new Date().toISOString();
+
+      const orderPayload = {
+        orderId,
+        productId: items[0]?.product_id || items[0]?.id || "",
+        productName: `${items.length} item${items.length === 1 ? "" : "s"}`,
+        qty: totalQty,
+        customerName,
+        customerEmail: email,
+        phone,
+        notes: `Bank transfer submitted by ${customerName}`,
+        status: "awaiting_bank_transfer",
+        paymentMethod: "bank_transfer",
+        amountDue: totals.total,
+        bankName: "Opay",
+        bankAccountNumber: "9068042947",
+        bankAccountName: "Marylou Ihechi Okechukwu",
+        bankReference,
+        receiptImage: receiptUrl,
+        orderLines: items.map((item) => ({
+          id: item.id,
+          productId: item.product_id || item.id,
+          productName: item.name,
+          qty: Number(item.qty) || 1,
+          unitPrice: parsePrice(item.price),
+          total: parsePrice(item.price) * (Number(item.qty) || 1)
+        })),
+        createdAt
+      };
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(orderPayload)
+      });
+
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(payload.error || "Could not submit payment confirmation");
+      }
+
+      saveCartState({ items: [], saved });
+      renderCartItems();
+      checkoutForm.reset();
+      if (checkoutReceiptName) {
+        checkoutReceiptName.textContent = "";
+      }
+      closeCheckoutPanel();
+      setCheckoutMessage("Payment submitted. Awaiting admin verification.", "ok");
+      showToast("Payment confirmation submitted. We will verify and update your order.");
+    } catch (error) {
+      setCheckoutMessage(error.message || "Could not submit payment confirmation.", "error");
+    } finally {
+      setCheckoutProcessing(false);
+    }
+  });
+}
 
 function animateCurrencyChange(elementId, startValue, endValue, duration = 240) {
   const element = document.getElementById(elementId);
@@ -212,6 +387,10 @@ function renderCartItems() {
     return;
   }
 
+  if (!sortedItems.length) {
+    closeCheckoutPanel();
+  }
+
   if (sortedItems.length === 0) {
     cartList.innerHTML = `
       <article class="cart-empty">
@@ -272,6 +451,12 @@ function renderCartItems() {
 
 function attachCartEvents() {
   document.addEventListener("click", (event) => {
+    const openCheckoutBtn = event.target.closest("[data-open-checkout]");
+    if (openCheckoutBtn) {
+      openCheckoutPanel();
+      return;
+    }
+
     const swipedDeleteBtn = event.target.closest("button[data-swipe-remove]");
     if (swipedDeleteBtn) {
       const id = swipedDeleteBtn.dataset.swipeRemove;
@@ -491,6 +676,7 @@ async function initCartPage() {
   renderCartItems();
   renderUpsells();
   attachCartEvents();
+  setupCheckoutForm();
   setupPromoToggle();
 }
 
