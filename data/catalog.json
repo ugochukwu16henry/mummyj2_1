@@ -39,7 +39,7 @@
       "description": "Rich chocolate layers with ganache",
       "image": "images/cake1.png",
       "last_updated": "2026-03-12",
-      "out_of_stock": false,
+      "out_of_stock": true,
       "order_only": false
     },
     {
