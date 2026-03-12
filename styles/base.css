@@ -1601,8 +1601,11 @@ body.force-mobile .remove-item {
         gap: 1rem;
     }
 
+    /* Ensure cart items stay wide enough so text doesn't stack vertically */
+    .cart-item,
     .cart-item-shell {
         grid-template-columns: 100px minmax(0, 1fr);
+        align-items: flex-start;
     }
 
     .cart-item img {
