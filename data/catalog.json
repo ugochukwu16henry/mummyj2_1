@@ -17,7 +17,7 @@
       "category": "Banana Bread",
       "stock": 10,
       "out_of_stock": false,
-      "order_only": true,
+      "order_only": false,
       "tags": [
         "fresh",
         "great"
