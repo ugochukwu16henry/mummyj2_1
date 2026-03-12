@@ -15,7 +15,7 @@
       "name": "Banana Bread",
       "price": 3500,
       "category": "Banana Bread",
-      "stock": 10,
+      "stock": 12,
       "out_of_stock": false,
       "order_only": false,
       "tags": [
