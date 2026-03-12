@@ -16,6 +16,8 @@ const API_BASE =
   window.location.hostname === "localhost"
     ? "http://localhost:5050/api"
     : "https://mummyj21-frontend-production.up.railway.app/api";
+const ADMIN_WHATSAPP_NUMBER = "2349068042947";
+const MAX_RECEIPT_BYTES = 5 * 1024 * 1024;
 
 const SHIPPING_THRESHOLD = 15000;
 const SHIPPING_FEE = 2500;
@@ -131,6 +133,11 @@ function setupCheckoutForm() {
       return;
     }
 
+    if (receiptFile.size > MAX_RECEIPT_BYTES) {
+      setCheckoutMessage("Receipt file is too large. Please upload a file under 5MB.", "error");
+      return;
+    }
+
     const email = String(document.getElementById("checkout-email")?.value || "").trim();
     const customerName = String(document.getElementById("checkout-name")?.value || "").trim();
     const phone = String(document.getElementById("checkout-phone")?.value || "").trim();
@@ -148,18 +155,19 @@ function setupCheckoutForm() {
       const receiptUrl = await fileToDataUrl(receiptFile);
       const totals = calcTotals(items);
       const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+      const orderLineLabels = items.map((item) => `${item.name} x${Number(item.qty) || 1}`);
       const orderId = `ORD-${Date.now()}`;
       const createdAt = new Date().toISOString();
 
       const orderPayload = {
         orderId,
         productId: items[0]?.product_id || items[0]?.id || "",
-        productName: `${items.length} item${items.length === 1 ? "" : "s"}`,
+        productName: orderLineLabels.join(", "),
         qty: totalQty,
         customerName,
         customerEmail: email,
         phone,
-        notes: `Bank transfer submitted by ${customerName}`,
+        notes: `Bank transfer submitted by ${customerName}. Items: ${orderLineLabels.join(" | ")}`,
         status: "awaiting_bank_transfer",
         paymentMethod: "bank_transfer",
         amountDue: totals.total,
@@ -201,6 +209,19 @@ function setupCheckoutForm() {
       closeCheckoutPanel();
       setCheckoutMessage("Payment submitted. Awaiting admin verification.", "ok");
       showToast("Payment confirmation submitted. We will verify and update your order.");
+
+      const adminMessage = encodeURIComponent(
+        [
+          "New bank transfer order submitted.",
+          `Order ID: ${orderId}`,
+          `Customer: ${customerName}`,
+          `Email: ${email}`,
+          `Phone: ${phone}`,
+          `Total: ${formatNaira(totals.total)}`,
+          `Reference: ${bankReference}`
+        ].join("\n")
+      );
+      window.open(`https://wa.me/${ADMIN_WHATSAPP_NUMBER}?text=${adminMessage}`, "_blank", "noopener,noreferrer");
     } catch (error) {
       setCheckoutMessage(error.message || "Could not submit payment confirmation.", "error");
     } finally {

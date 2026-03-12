@@ -355,6 +355,105 @@ function formatCurrency(value) {
   }).format(value);
 }
 
+function getOrderLines(order) {
+  if (Array.isArray(order.orderLines) && order.orderLines.length) {
+    return order.orderLines;
+  }
+
+  return [{
+    productName: order.productName || "-",
+    qty: Number(order.qty) > 0 ? Number(order.qty) : 1,
+    total: Number.isFinite(Number(order.amountDue)) ? Number(order.amountDue) : 0
+  }];
+}
+
+function getOrderAmount(order) {
+  const explicitAmount = Number(order.amountDue);
+  if (Number.isFinite(explicitAmount) && explicitAmount > 0) {
+    return explicitAmount;
+  }
+
+  return getOrderLines(order).reduce((sum, line) => {
+    const lineTotal = Number(line.total);
+    return Number.isFinite(lineTotal) && lineTotal > 0 ? sum + lineTotal : sum;
+  }, 0);
+}
+
+function getOrderCustomerEmail(order) {
+  return String(
+    order.customerEmail
+    || order.email
+    || order.customer_email
+    || order.customer?.email
+    || ""
+  ).trim();
+}
+
+function toWhatsappNumber(phone) {
+  const digits = String(phone || "").replace(/\D/g, "");
+  if (!digits) {
+    return "";
+  }
+
+  if (digits.startsWith("234")) {
+    return digits;
+  }
+
+  if (digits.startsWith("0")) {
+    return `234${digits.slice(1)}`;
+  }
+
+  return digits;
+}
+
+function buildCustomerReceiptText(order) {
+  const lines = getOrderLines(order)
+    .map((line) => `- ${line.productName || "Item"} x${Number(line.qty) || 1}`)
+    .join("\n");
+  const total = formatCurrency(getOrderAmount(order) || 0);
+
+  return [
+    "mummyj2Treats Receipt",
+    `Order ID: ${order.orderId || "-"}`,
+    `Customer: ${order.customerName || "-"}`,
+    "Items:",
+    lines,
+    `Total: ${total}`,
+    `Status: ${order.status || "Confirmed"}`
+  ].join("\n");
+}
+
+function openReceiptPrintView(order) {
+  const linesHtml = getOrderLines(order)
+    .map((line) => `<li>${line.productName || "Item"} × ${Number(line.qty) || 1}</li>`)
+    .join("");
+  const total = formatCurrency(getOrderAmount(order) || 0);
+  const receiptWindow = window.open("", "_blank", "noopener,noreferrer");
+  if (!receiptWindow) {
+    return false;
+  }
+
+  receiptWindow.document.write(`<!doctype html>
+<html><head><meta charset="utf-8"><title>Receipt ${order.orderId || ""}</title>
+<style>
+body{font-family:Arial,sans-serif;padding:24px;color:#1f2937}
+h1{margin:0 0 8px}
+ul{padding-left:18px}
+.meta{margin:6px 0}
+.box{border:1px solid #d1d5db;border-radius:10px;padding:14px;margin-top:12px}
+</style></head><body>
+<h1>mummyj2Treats Receipt</h1>
+<p class="meta">Order ID: ${order.orderId || "-"}</p>
+<p class="meta">Customer: ${order.customerName || "-"}</p>
+<p class="meta">Email: ${order.customerEmail || "-"}</p>
+<div class="box"><strong>Items</strong><ul>${linesHtml}</ul><p><strong>Total: ${total}</strong></p></div>
+</body></html>`);
+  receiptWindow.document.close();
+  receiptWindow.focus();
+  setTimeout(() => receiptWindow.print(), 180);
+  return true;
+}
+
 function renderProductsTable() {
   productsTable.innerHTML = state.filteredProducts.map((product) => `
     <tr data-id="${product.id}">
@@ -424,17 +523,17 @@ function renderOrders() {
   ordersTable.innerHTML = orders.map((order) => `
     <tr>
       <td class="mono">${order.orderId || "-"}</td>
-      <td>${order.productName || "-"}</td>
+      <td>${getOrderLines(order).map((line) => `<div>${line.productName || "Item"} <strong>x${Number(line.qty) || 1}</strong></div>`).join("")}</td>
       <td>${order.customerName || "-"}</td>
-      <td>${order.customerEmail || "-"}</td>
+      <td>${getOrderCustomerEmail(order) || "-"}</td>
       <td>${order.phone || "-"}</td>
       <td>${getPaymentLabel(order)}</td>
       <td><span class="status-badge ${getOrderStatusClass(order.status)}">${order.status || "pending"}</span></td>
-      <td class="mono">${Number(order.amountDue) > 0 ? formatCurrency(Number(order.amountDue)) : "-"}</td>
+      <td class="mono">${getOrderAmount(order) > 0 ? formatCurrency(getOrderAmount(order)) : "-"}</td>
       <td class="mono">${order.bankReference || "-"}</td>
       <td>
         ${order.receiptImage
-          ? `<a class="receipt-link" href="${order.receiptImage}" target="_blank" rel="noopener noreferrer">View</a>${String(order.receiptImage).startsWith("data:image") ? `<img class="receipt-thumb" src="${order.receiptImage}" alt="Receipt proof">` : ""}`
+          ? `<button type="button" class="btn mini" data-open-receipt="${order.orderId || ""}">Open</button>${String(order.receiptImage).startsWith("data:image") ? `<img class="receipt-thumb" src="${order.receiptImage}" alt="Receipt proof">` : ""}`
           : "-"}
       </td>
       <td>
@@ -445,6 +544,9 @@ function renderOrders() {
           }
           if (status === "flagged") {
             return `<div class="row-actions"><button type="button" class="btn mini" data-unflag-order="${order.orderId || ""}">Move to Pending</button></div>`;
+          }
+          if (status === "confirmed" || status === "paid") {
+            return `<div class="row-actions"><button type="button" class="btn mini" data-send-whatsapp="${order.orderId || ""}">WhatsApp</button><button type="button" class="btn mini" data-send-email="${order.orderId || ""}">Email</button><button type="button" class="btn mini" data-print-receipt="${order.orderId || ""}">PDF</button></div>`;
           }
           return "-";
         })()}
@@ -1496,9 +1598,79 @@ if (exportContentBtn) {
 
 if (ordersTable) {
   ordersTable.addEventListener("click", async (event) => {
+    const receiptButton = event.target.closest("button[data-open-receipt]");
     const approveButton = event.target.closest("button[data-approve-order]");
     const flagButton = event.target.closest("button[data-flag-order]");
     const unflagButton = event.target.closest("button[data-unflag-order]");
+    const whatsappButton = event.target.closest("button[data-send-whatsapp]");
+    const emailButton = event.target.closest("button[data-send-email]");
+    const printButton = event.target.closest("button[data-print-receipt]");
+
+    if (receiptButton) {
+      const orderId = receiptButton.dataset.openReceipt;
+      const order = (state.catalog.orders || []).find((entry) => String(entry.orderId) === String(orderId));
+      if (!order?.receiptImage) {
+        showSyncing(true, "Receipt not available for this order.");
+        setTimeout(() => showSyncing(false), 1500);
+        return;
+      }
+
+      const openedWindow = window.open(order.receiptImage, "_blank", "noopener,noreferrer");
+      if (!openedWindow) {
+        showSyncing(true, "Popup blocked. Allow popups and try again.");
+        setTimeout(() => showSyncing(false), 1700);
+      }
+      return;
+    }
+
+    if (whatsappButton) {
+      const orderId = whatsappButton.dataset.sendWhatsapp;
+      const order = (state.catalog.orders || []).find((entry) => String(entry.orderId) === String(orderId));
+      if (!order) {
+        return;
+      }
+
+      const whatsappNumber = toWhatsappNumber(order.phone);
+      if (!whatsappNumber) {
+        showSyncing(true, "Customer phone is missing or invalid.");
+        setTimeout(() => showSyncing(false), 1700);
+        return;
+      }
+
+      const text = encodeURIComponent(buildCustomerReceiptText(order));
+      window.open(`https://wa.me/${whatsappNumber}?text=${text}`, "_blank", "noopener,noreferrer");
+      return;
+    }
+
+    if (emailButton) {
+      const orderId = emailButton.dataset.sendEmail;
+      const order = (state.catalog.orders || []).find((entry) => String(entry.orderId) === String(orderId));
+      if (!order?.customerEmail) {
+        showSyncing(true, "Customer email is missing for this order.");
+        setTimeout(() => showSyncing(false), 1700);
+        return;
+      }
+
+      const subject = encodeURIComponent(`mummyj2Treats Receipt - ${order.orderId || "Order"}`);
+      const body = encodeURIComponent(buildCustomerReceiptText(order));
+      window.location.href = `mailto:${order.customerEmail}?subject=${subject}&body=${body}`;
+      return;
+    }
+
+    if (printButton) {
+      const orderId = printButton.dataset.printReceipt;
+      const order = (state.catalog.orders || []).find((entry) => String(entry.orderId) === String(orderId));
+      if (!order) {
+        return;
+      }
+
+      const opened = openReceiptPrintView(order);
+      if (!opened) {
+        showSyncing(true, "Popup blocked. Allow popups and try again.");
+        setTimeout(() => showSyncing(false), 1700);
+      }
+      return;
+    }
 
     if (flagButton) {
       const orderId = flagButton.dataset.flagOrder;
