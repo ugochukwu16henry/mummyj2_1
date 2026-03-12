@@ -447,6 +447,26 @@ pre {
   margin-top: 0.3rem;
 }
 
+.receipt-preview {
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid var(--line);
+  display: block;
+  margin: 0 0 0.35rem;
+}
+
+.receipt-file-tag {
+  display: inline-block;
+  margin: 0 0 0.35rem;
+  font-size: 0.74rem;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
 .row-actions {
   display: flex;
   gap: 0.4rem;

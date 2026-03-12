@@ -379,6 +379,17 @@ function getOrderAmount(order) {
   }, 0);
 }
 
+function isImageReceipt(receiptValue) {
+  const value = String(receiptValue || "");
+  if (!value) {
+    return false;
+  }
+  if (value.startsWith("data:image")) {
+    return true;
+  }
+  return /\.(png|jpe?g|webp|gif|bmp|svg)(\?.*)?$/i.test(value);
+}
+
 function getOrderCustomerEmail(order) {
   return String(
     order.customerEmail
@@ -533,7 +544,10 @@ function renderOrders() {
       <td class="mono">${order.bankReference || "-"}</td>
       <td>
         ${order.receiptImage
-          ? `<button type="button" class="btn mini" data-open-receipt="${order.orderId || ""}">Open</button>${String(order.receiptImage).startsWith("data:image") ? `<img class="receipt-thumb" src="${order.receiptImage}" alt="Receipt proof">` : ""}`
+          ? `${isImageReceipt(order.receiptImage)
+            ? `<img class="receipt-preview" src="${order.receiptImage}" alt="Receipt proof for ${order.orderId || "order"}">`
+            : `<span class="receipt-file-tag">Receipt file</span>`
+          }<button type="button" class="btn mini" data-open-receipt="${order.orderId || ""}">Open</button>`
           : "-"}
       </td>
       <td>
@@ -546,7 +560,10 @@ function renderOrders() {
             return `<div class="row-actions"><button type="button" class="btn mini" data-unflag-order="${order.orderId || ""}">Move to Pending</button></div>`;
           }
           if (status === "confirmed" || status === "paid") {
-            return `<div class="row-actions"><button type="button" class="btn mini" data-send-whatsapp="${order.orderId || ""}">WhatsApp</button><button type="button" class="btn mini" data-send-email="${order.orderId || ""}">Email</button><button type="button" class="btn mini" data-print-receipt="${order.orderId || ""}">PDF</button></div>`;
+            const deleteReceiptButton = order.receiptImage
+              ? `<button type="button" class="btn mini danger" data-delete-receipt="${order.orderId || ""}">Delete Receipt</button>`
+              : "";
+            return `<div class="row-actions"><button type="button" class="btn mini" data-send-whatsapp="${order.orderId || ""}">WhatsApp</button><button type="button" class="btn mini" data-send-email="${order.orderId || ""}">Email</button><button type="button" class="btn mini" data-print-receipt="${order.orderId || ""}">PDF</button>${deleteReceiptButton}</div>`;
           }
           return "-";
         })()}
@@ -657,6 +674,31 @@ async function updateOrderStatus(orderId, nextStatus, reason = "") {
   }
 
   orders[targetIndex] = updated;
+  state.catalog = {
+    ...state.catalog,
+    orders
+  };
+
+  renderOrders();
+  renderJsonPreview();
+  await saveCatalog();
+}
+
+async function deleteOrderReceipt(orderId) {
+  const orders = Array.isArray(state.catalog.orders) ? [...state.catalog.orders] : [];
+  const targetIndex = orders.findIndex((entry) => String(entry.orderId) === String(orderId));
+  if (targetIndex < 0) {
+    throw new Error("Order not found");
+  }
+
+  const target = orders[targetIndex];
+  orders[targetIndex] = {
+    ...target,
+    receiptImage: "",
+    receiptDeletedAt: new Date().toISOString(),
+    receiptDeletedBy: state.currentAdminEmail || "admin@mummyj2treats.com"
+  };
+
   state.catalog = {
     ...state.catalog,
     orders
@@ -1636,6 +1678,7 @@ if (exportContentBtn) {
 if (ordersTable) {
   ordersTable.addEventListener("click", async (event) => {
     const receiptButton = event.target.closest("button[data-open-receipt]");
+    const deleteReceiptButton = event.target.closest("button[data-delete-receipt]");
     const approveAndSendButton = event.target.closest("button[data-approve-send-order]");
     const approveButton = event.target.closest("button[data-approve-order]");
     const flagButton = event.target.closest("button[data-flag-order]");
@@ -1643,6 +1686,30 @@ if (ordersTable) {
     const whatsappButton = event.target.closest("button[data-send-whatsapp]");
     const emailButton = event.target.closest("button[data-send-email]");
     const printButton = event.target.closest("button[data-print-receipt]");
+
+    if (deleteReceiptButton) {
+      const orderId = deleteReceiptButton.dataset.deleteReceipt;
+      if (!orderId) {
+        return;
+      }
+
+      const confirmed = window.confirm("Delete this receipt image/file from the order to free space?");
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        deleteReceiptButton.disabled = true;
+        await deleteOrderReceipt(orderId);
+        showSyncing(true, "Receipt deleted and synced.");
+        setTimeout(() => showSyncing(false), 1400);
+      } catch (error) {
+        deleteReceiptButton.disabled = false;
+        showSyncing(true, `Could not delete receipt: ${error.message}`);
+        setTimeout(() => showSyncing(false), 1800);
+      }
+      return;
+    }
 
     if (approveAndSendButton) {
       const orderId = approveAndSendButton.dataset.approveSendOrder;
