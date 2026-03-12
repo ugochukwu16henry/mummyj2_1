@@ -451,7 +451,15 @@ function renderOrders() {
       <td>${order.qty || 1}</td>
       <td>${order.date || "-"}</td>
       <td>${order.time || "-"}</td>
-      <td>${order.notes || "-"}</td>
+      <td>${(() => {
+        const baseNotes = String(order.notes || "").trim();
+        const reason = String(order.flaggedReason || "").trim();
+        if (reason) {
+          const prefix = baseNotes ? `${baseNotes} • ` : "";
+          return `${prefix}Flag reason: ${reason}`;
+        }
+        return baseNotes || "-";
+      })()}</td>
     </tr>
   `).join("");
 }
@@ -489,7 +497,7 @@ async function approveOrderPayment(orderId) {
   await saveCatalog();
 }
 
-async function updateOrderStatus(orderId, nextStatus) {
+async function updateOrderStatus(orderId, nextStatus, reason = "") {
   const orders = Array.isArray(state.catalog.orders) ? [...state.catalog.orders] : [];
   const targetIndex = orders.findIndex((entry) => String(entry.orderId) === String(orderId));
   if (targetIndex < 0) {
@@ -505,6 +513,7 @@ async function updateOrderStatus(orderId, nextStatus) {
   if (nextStatus === "flagged") {
     updated.flaggedAt = new Date().toISOString();
     updated.flaggedBy = state.currentAdminEmail || "admin@mummyj2treats.com";
+    updated.flaggedReason = String(reason || "").trim();
   }
 
   orders[targetIndex] = updated;
@@ -1458,6 +1467,14 @@ if (ordersTable) {
         return;
       }
 
+      const reasonInput = window.prompt("Why are you flagging this order?", "");
+      const reason = String(reasonInput || "").trim();
+      if (!reason) {
+        showSyncing(true, "Flag reason is required.");
+        setTimeout(() => showSyncing(false), 1500);
+        return;
+      }
+
       const confirmed = window.confirm("Flag this order for manual review?");
       if (!confirmed) {
         return;
@@ -1465,7 +1482,7 @@ if (ordersTable) {
 
       try {
         flagButton.disabled = true;
-        await updateOrderStatus(orderId, "flagged");
+        await updateOrderStatus(orderId, "flagged", reason);
         showSyncing(true, "Order flagged for review and synced");
         setTimeout(() => showSyncing(false), 1400);
       } catch (error) {
