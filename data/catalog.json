@@ -224,6 +224,19 @@
   },
   "orders": [
     {
+      "orderId": "ORD-1773350424846",
+      "productId": "p011",
+      "productName": "Parfait (Large) x5",
+      "qty": 5,
+      "date": "",
+      "time": "",
+      "customerName": "Henry Ugochukwu",
+      "phone": "07068313709",
+      "notes": "Bank transfer submitted by Henry Ugochukwu. Items: Parfait (Large) x5",
+      "status": "awaiting_bank_transfer",
+      "createdAt": "2026-03-12T21:20:24.846Z"
+    },
+    {
       "orderId": "ORD-1773349089323",
       "productId": "p011",
       "productName": "2 items",
