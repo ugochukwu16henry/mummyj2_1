@@ -540,7 +540,7 @@ function renderOrders() {
         ${(() => {
           const status = String(order.status || "").toLowerCase();
           if (status === "awaiting_bank_transfer") {
-            return `<div class="row-actions"><button type="button" class="btn mini primary" data-approve-order="${order.orderId || ""}">Approve</button><button type="button" class="btn mini danger" data-flag-order="${order.orderId || ""}">Flag</button></div>`;
+            return `<div class="row-actions"><button type="button" class="btn mini primary" data-approve-send-order="${order.orderId || ""}">Approve + Send WA</button><button type="button" class="btn mini" data-approve-order="${order.orderId || ""}">Approve Only</button><button type="button" class="btn mini danger" data-flag-order="${order.orderId || ""}">Flag</button></div>`;
           }
           if (status === "flagged") {
             return `<div class="row-actions"><button type="button" class="btn mini" data-unflag-order="${order.orderId || ""}">Move to Pending</button></div>`;
@@ -590,6 +590,8 @@ async function approveOrderPayment(orderId) {
     approvedBy
   };
 
+  const updatedOrder = orders[targetIndex];
+
   state.catalog = {
     ...state.catalog,
     orders
@@ -598,6 +600,41 @@ async function approveOrderPayment(orderId) {
   renderOrders();
   renderJsonPreview();
   await saveCatalog();
+  return updatedOrder;
+}
+
+function openWhatsappForOrder(order) {
+  const whatsappNumber = toWhatsappNumber(order?.phone);
+  if (!whatsappNumber) {
+    showSyncing(true, "Customer phone is missing or invalid.");
+    setTimeout(() => showSyncing(false), 1700);
+    return false;
+  }
+
+  const text = encodeURIComponent(buildCustomerReceiptText(order));
+  window.open(`https://wa.me/${whatsappNumber}?text=${text}`, "_blank", "noopener,noreferrer");
+  return true;
+}
+
+async function approveAndSendWhatsApp(orderId, actionButton) {
+  const disabledButton = actionButton || null;
+  if (disabledButton) {
+    disabledButton.disabled = true;
+  }
+
+  try {
+    const approvedOrder = await approveOrderPayment(orderId);
+    openReceiptPrintView(approvedOrder);
+    openWhatsappForOrder(approvedOrder);
+    showSyncing(true, "Payment approved, receipt generated, and WhatsApp opened.");
+    setTimeout(() => showSyncing(false), 1500);
+  } catch (error) {
+    if (disabledButton) {
+      disabledButton.disabled = false;
+    }
+    showSyncing(true, `Could not complete action: ${error.message}`);
+    setTimeout(() => showSyncing(false), 1800);
+  }
 }
 
 async function updateOrderStatus(orderId, nextStatus, reason = "") {
@@ -1599,12 +1636,28 @@ if (exportContentBtn) {
 if (ordersTable) {
   ordersTable.addEventListener("click", async (event) => {
     const receiptButton = event.target.closest("button[data-open-receipt]");
+    const approveAndSendButton = event.target.closest("button[data-approve-send-order]");
     const approveButton = event.target.closest("button[data-approve-order]");
     const flagButton = event.target.closest("button[data-flag-order]");
     const unflagButton = event.target.closest("button[data-unflag-order]");
     const whatsappButton = event.target.closest("button[data-send-whatsapp]");
     const emailButton = event.target.closest("button[data-send-email]");
     const printButton = event.target.closest("button[data-print-receipt]");
+
+    if (approveAndSendButton) {
+      const orderId = approveAndSendButton.dataset.approveSendOrder;
+      if (!orderId) {
+        return;
+      }
+
+      const confirmed = window.confirm("Approve payment, generate receipt, and open WhatsApp for customer?");
+      if (!confirmed) {
+        return;
+      }
+
+      await approveAndSendWhatsApp(orderId, approveAndSendButton);
+      return;
+    }
 
     if (receiptButton) {
       const orderId = receiptButton.dataset.openReceipt;
@@ -1630,15 +1683,7 @@ if (ordersTable) {
         return;
       }
 
-      const whatsappNumber = toWhatsappNumber(order.phone);
-      if (!whatsappNumber) {
-        showSyncing(true, "Customer phone is missing or invalid.");
-        setTimeout(() => showSyncing(false), 1700);
-        return;
-      }
-
-      const text = encodeURIComponent(buildCustomerReceiptText(order));
-      window.open(`https://wa.me/${whatsappNumber}?text=${text}`, "_blank", "noopener,noreferrer");
+      openWhatsappForOrder(order);
       return;
     }
 
