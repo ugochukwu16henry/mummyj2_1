@@ -233,8 +233,10 @@
       "customerName": "Obi John",
       "phone": "09015718484",
       "notes": "Bank transfer submitted by Obi John. Items: Parfait (Large) x3",
-      "status": "awaiting_bank_transfer",
-      "createdAt": "2026-03-12T21:48:01.269Z"
+      "status": "Confirmed",
+      "createdAt": "2026-03-12T21:48:01.269Z",
+      "approvedAt": "2026-03-12T21:49:39.420Z",
+      "approvedBy": "ugochukwuhenry16@gmail.com"
     },
     {
       "orderId": "ORD-1773350424846",
