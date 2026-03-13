@@ -153,8 +153,10 @@
       "customerName": "Henry Ugochukwu",
       "phone": "09015718484",
       "notes": "Bank transfer submitted by Henry Ugochukwu. Items: Parfait big cup x1",
-      "status": "awaiting_bank_transfer",
-      "createdAt": "2026-03-13T12:39:03.806Z"
+      "status": "Confirmed",
+      "createdAt": "2026-03-13T12:39:03.806Z",
+      "approvedAt": "2026-03-13T12:40:23.036Z",
+      "approvedBy": "ugochukwuhenry16@gmail.com"
     }
   ]
 }
