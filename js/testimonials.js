@@ -117,6 +117,19 @@ function validateFileSize(file, maxBytes) {
   return null;
 }
 
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getInitial(value) {
+  return String(value || "").trim().charAt(0).toUpperCase() || "?";
+}
+
 function renderHomeTestimonials(testimonials) {
   const container = document.getElementById("home-testimonials");
   if (!container) return;
@@ -129,11 +142,15 @@ function renderHomeTestimonials(testimonials) {
   const featured = testimonials.slice(0, 3);
   container.innerHTML = featured
     .map((t) => `
-      <article class="card" aria-label="Testimony from ${t.name}">
-        ${t.imageUrl ? `<img src="${t.imageUrl}" alt="${t.name}" loading="lazy">` : ""}
-        <div style="padding:1rem;">
-          <h3>${t.name}</h3>
-          <p>"${t.message}"</p>
+      <article class="card story-card testimonial-card" aria-label="Testimony from ${escapeHtml(t.name)}">
+        <div class="story-card-media">
+          ${t.imageUrl
+            ? `<img src="${t.imageUrl}" alt="Photo of ${escapeHtml(t.name)}" loading="lazy">`
+            : `<div class="story-card-avatar" aria-hidden="true">${getInitial(t.name)}</div>`}
+        </div>
+        <div class="story-card-body">
+          <h3 class="story-card-title">${escapeHtml(t.name)}</h3>
+          <p class="story-card-copy">“${escapeHtml(t.message)}”</p>
         </div>
       </article>
     `)
@@ -151,11 +168,15 @@ function renderPageTestimonials(testimonials) {
 
   container.innerHTML = testimonials
     .map((t) => `
-      <article class="card" aria-label="Testimony from ${t.name}">
-        ${t.imageUrl ? `<img src="${t.imageUrl}" alt="${t.name}" loading="lazy">` : ""}
-        <div style="padding:1rem;">
-          <h3>${t.name}</h3>
-          <p>"${t.message}"</p>
+      <article class="card story-card testimonial-card" aria-label="Testimony from ${escapeHtml(t.name)}">
+        <div class="story-card-media">
+          ${t.imageUrl
+            ? `<img src="${t.imageUrl}" alt="Photo of ${escapeHtml(t.name)}" loading="lazy">`
+            : `<div class="story-card-avatar" aria-hidden="true">${getInitial(t.name)}</div>`}
+        </div>
+        <div class="story-card-body">
+          <h3 class="story-card-title">${escapeHtml(t.name)}</h3>
+          <p class="story-card-copy">“${escapeHtml(t.message)}”</p>
         </div>
       </article>
     `)
@@ -173,11 +194,15 @@ function renderBlog(posts) {
 
   container.innerHTML = posts
     .map((post) => `
-      <article class="card" aria-label="${post.title}">
-        ${post.imageUrl ? `<img src="${post.imageUrl}" alt="${post.title}" loading="lazy">` : ""}
-        <div style="padding:1rem;">
-          <h3>${post.title}</h3>
-          <p>${post.body}</p>
+      <article class="card story-card blog-story-card" aria-label="${escapeHtml(post.title)}">
+        <div class="story-card-media story-card-media-landscape">
+          ${post.imageUrl
+            ? `<img src="${post.imageUrl}" alt="${escapeHtml(post.title)}" loading="lazy">`
+            : `<div class="story-card-avatar" aria-hidden="true">${getInitial(post.title)}</div>`}
+        </div>
+        <div class="story-card-body">
+          <h3 class="story-card-title">${escapeHtml(post.title)}</h3>
+          <p class="story-card-copy">${escapeHtml(post.body)}</p>
         </div>
       </article>
     `)
