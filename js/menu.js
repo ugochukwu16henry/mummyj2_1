@@ -4,6 +4,7 @@ import { openModal } from "./modal.js";
 import { addItemToCart, updateCartBadge } from "./cart-store.js";
 
 let addToastTimer = null;
+let catalogItemsCache = [];
 const ORDER_API_BASE = window.location.hostname === "localhost"
   ? "http://localhost:5050/api"
   : "/api";
@@ -104,6 +105,71 @@ function getOrderModal() {
       modal.style.display = "none";
     }
   });
+
+  const orderForm = document.getElementById("order-only-form");
+  if (orderForm && !orderForm.dataset.bound) {
+    orderForm.dataset.bound = "1";
+    orderForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const itemId = orderForm.dataset.itemId;
+      const item = catalogItemsCache.find((entry) => String(entry.id) === String(itemId));
+      if (!item) {
+        showAddToCartToast("Could not find this product. Please try again.");
+        return;
+      }
+
+      const qty = Number(document.getElementById("order-qty")?.value || 1);
+      const date = document.getElementById("order-date")?.value || "";
+      const time = document.getElementById("order-time")?.value || "";
+      const customerName = document.getElementById("order-customer-name")?.value.trim() || "";
+      const phone = document.getElementById("order-phone")?.value.trim() || "";
+      const notes = document.getElementById("order-notes")?.value.trim() || "";
+
+      if (!customerName || !phone || !date || !time || qty <= 0) {
+        showAddToCartToast("Please fill all required order details");
+        return;
+      }
+
+      const orderRequestId = `ORQ-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+      const order = {
+        orderId: orderRequestId,
+        orderRequestId,
+        productId: String(item.id),
+        productName: item.name,
+        qty,
+        date,
+        time,
+        customerName,
+        phone,
+        notes,
+        paymentStatus: "unpaid",
+        createdAt: new Date().toISOString(),
+        status: "order_request_submitted"
+      };
+
+      const sentToAdmin = await submitOrderRequest(order);
+
+      addItemToCart({
+        ...item,
+        qty,
+        cart_line_id: `${item.id}-${Date.now()}`,
+        order_request: order
+      });
+      updateCartBadge();
+      if (sentToAdmin) {
+        showAddToCartToast(`${item.name} request added. Continue to checkout.`);
+      } else {
+        showAddToCartToast(`${item.name} added to cart. Complete checkout to submit order.`);
+      }
+
+      modal.setAttribute("aria-hidden", "true");
+      modal.style.display = "none";
+      orderForm.reset();
+
+      window.location.href = "cart.html?openCheckout=1";
+    });
+  }
 
   return modal;
 }
@@ -259,6 +325,7 @@ export async function loadMenu(container) {
         }
         return a.name.localeCompare(b.name);
       });
+    catalogItemsCache = items;
 
     // Validate data structure
     if (!Array.isArray(items) || items.length === 0) {
@@ -333,73 +400,6 @@ export async function loadMenu(container) {
         showAddToCartToast(`${item.name} added to cart`);
       });
     });
-
-    const orderForm = document.getElementById("order-only-form");
-    if (orderForm && !orderForm.dataset.bound) {
-      orderForm.dataset.bound = "1";
-      orderForm.addEventListener("submit", async (event) => {
-        event.preventDefault();
-
-        const itemId = orderForm.dataset.itemId;
-        const item = items.find((entry) => String(entry.id) === String(itemId));
-        if (!item) {
-          return;
-        }
-
-        const qty = Number(document.getElementById("order-qty")?.value || 1);
-        const date = document.getElementById("order-date")?.value || "";
-        const time = document.getElementById("order-time")?.value || "";
-        const customerName = document.getElementById("order-customer-name")?.value.trim() || "";
-        const phone = document.getElementById("order-phone")?.value.trim() || "";
-        const notes = document.getElementById("order-notes")?.value.trim() || "";
-
-        if (!customerName || !phone || !date || !time || qty <= 0) {
-          showAddToCartToast("Please fill all required order details");
-          return;
-        }
-
-        const orderRequestId = `ORQ-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
-        const order = {
-          orderId: orderRequestId,
-          orderRequestId,
-          productId: String(item.id),
-          productName: item.name,
-          qty,
-          date,
-          time,
-          customerName,
-          phone,
-          notes,
-          paymentStatus: "unpaid",
-          createdAt: new Date().toISOString(),
-          status: "order_request_submitted"
-        };
-
-        const sentToAdmin = await submitOrderRequest(order);
-
-        addItemToCart({
-          ...item,
-          qty,
-          cart_line_id: `${item.id}-${Date.now()}`,
-          order_request: order
-        });
-        updateCartBadge();
-        if (sentToAdmin) {
-          showAddToCartToast(`${item.name} request added. Continue to checkout.`);
-        } else {
-          showAddToCartToast(`${item.name} added to cart. Complete checkout to submit order.`);
-        }
-
-        const modal = document.getElementById("order-only-modal");
-        if (modal) {
-          modal.setAttribute("aria-hidden", "true");
-          modal.style.display = "none";
-        }
-        orderForm.reset();
-
-        window.location.href = "cart.html?openCheckout=1";
-      });
-    }
 
     // Add keyboard navigation for cards
     container.querySelectorAll(".card").forEach((card) => {

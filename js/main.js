@@ -1,6 +1,6 @@
 // main.js – ES Module
 // Main application entry point for Mummy J's Treats website
-import { loadMenu } from "./menu.js";
+import { loadMenu } from "./menu.js?v=20260313a";
 import { openModal, closeModal } from "./modal.js";
 import { updateCartBadge } from "./cart-store.js";
 
