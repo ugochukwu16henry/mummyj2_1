@@ -141,7 +141,7 @@
     {
       "id": "p012",
       "name": "Zobo Drink (1.5L)",
-      "price": 2500,
+      "price": 1000,
       "category": "Drinks",
       "tags": [
         "drink",
@@ -150,7 +150,7 @@
       "stock": 35,
       "description": "Hibiscus and pineapple",
       "image": "images/zobo.jpg",
-      "last_updated": "2026-03-11",
+      "last_updated": "2026-03-13",
       "out_of_stock": false,
       "order_only": true
     }
