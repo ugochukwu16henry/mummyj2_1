@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@400;600&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="styles/base.css?v=20260313g">
+    <link rel="stylesheet" href="styles/base.css?v=20260313h">
 </head>
 
 <body class="cart-screen">
@@ -100,8 +100,8 @@
                     </div>
 
                     <form id="checkout-form" class="checkout-form" novalidate>
-                        <label for="checkout-email">Email for order updates</label>
-                        <input id="checkout-email" name="email" type="email" autocomplete="email" required placeholder="you@example.com">
+                        <label for="checkout-email">Email for order updates (Optional)</label>
+                        <input id="checkout-email" name="email" type="email" autocomplete="email" placeholder="you@example.com">
 
                         <label for="checkout-name">Full Name</label>
                         <input id="checkout-name" name="customerName" type="text" autocomplete="name" required placeholder="Your full name">
@@ -109,8 +109,8 @@
                         <label for="checkout-phone">Phone Number</label>
                         <input id="checkout-phone" name="phone" type="tel" autocomplete="tel" required placeholder="08012345678">
 
-                        <label for="checkout-reference">Bank Transfer Reference</label>
-                        <input id="checkout-reference" name="bankReference" type="text" required placeholder="Session / transaction reference">
+                        <label for="checkout-reference">Bank Transfer Reference (Optional)</label>
+                        <input id="checkout-reference" name="bankReference" type="text" placeholder="Session / transaction reference">
 
                         <label for="checkout-receipt">Upload Receipt</label>
                         <input id="checkout-receipt" name="receipt" type="file" accept="image/*,.pdf" required>

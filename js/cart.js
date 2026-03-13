@@ -88,8 +88,9 @@ function openCheckoutPanel() {
   document.body.classList.add("checkout-focus");
   setCheckoutMessage("");
 
-  if (checkoutEmailInput && !checkoutEmailInput.value) {
-    checkoutEmailInput.focus();
+  const checkoutNameInput = document.getElementById("checkout-name");
+  if (checkoutNameInput && !checkoutNameInput.value) {
+    checkoutNameInput.focus();
   }
 }
 
@@ -139,8 +140,8 @@ function setupCheckoutForm() {
     const phone = String(document.getElementById("checkout-phone")?.value || "").trim();
     const bankReference = String(document.getElementById("checkout-reference")?.value || "").trim();
 
-    if (!email || !customerName || !phone || !bankReference) {
-      setCheckoutMessage("Please fill all checkout fields.", "error");
+    if (!customerName || !phone) {
+      setCheckoutMessage("Please fill all required checkout fields.", "error");
       return;
     }
 
