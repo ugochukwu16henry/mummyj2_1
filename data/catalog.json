@@ -131,12 +131,12 @@
         "snack",
         "fried"
       ],
-      "stock": 45,
+      "stock": 15,
       "description": "Freshly fried daily",
       "image": "images/puffpuff.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
+      "last_updated": "2026-03-13",
+      "out_of_stock": false,
+      "order_only": true
     },
     {
       "id": "p011",
