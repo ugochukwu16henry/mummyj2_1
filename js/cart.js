@@ -40,6 +40,22 @@ const checkoutReceiptInput = document.getElementById("checkout-receipt");
 const checkoutReceiptName = document.getElementById("checkout-receipt-name");
 const confirmPaymentButton = document.getElementById("confirm-payment-btn");
 
+function getLinkedOrderRequests(items) {
+  return items
+    .map((item) => item?.order_request)
+    .filter((request) => request && typeof request === "object");
+}
+
+function getUniqueLinkedOrderRequestIds(requests) {
+  return Array.from(
+    new Set(
+      requests
+        .map((request) => String(request.orderRequestId || request.orderId || "").trim())
+        .filter(Boolean)
+    )
+  );
+}
+
 async function fileToDataUrl(file) {
   if (!file) {
     return "";
@@ -153,19 +169,46 @@ function setupCheckoutForm() {
       const totals = calcTotals(items);
       const totalQty = items.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
       const orderLineLabels = items.map((item) => `${item.name} x${Number(item.qty) || 1}`);
+      const linkedOrderRequests = getLinkedOrderRequests(items);
+      const linkedOrderRequestIds = getUniqueLinkedOrderRequestIds(linkedOrderRequests);
+      const primaryLinkedRequest = linkedOrderRequests.length === 1 ? linkedOrderRequests[0] : null;
       const orderId = `ORD-${Date.now()}`;
       const createdAt = new Date().toISOString();
+      const linkedRequestSummary = linkedOrderRequests
+        .map((request) => {
+          const requestId = String(request.orderRequestId || request.orderId || "").trim();
+          const needDate = String(request.date || "").trim();
+          const needTime = String(request.time || "").trim();
+          const neededAt = `${needDate}${needTime ? ` ${needTime}` : ""}`.trim() || "unspecified";
+          const qtyNeeded = Number(request.qty) > 0 ? Number(request.qty) : 1;
+          return `${requestId || "N/A"} (${String(request.productName || "Item")} x${qtyNeeded} - ${neededAt})`;
+        })
+        .join(" | ");
+
+      const notesParts = [
+        `Bank transfer submitted by ${customerName}. Items: ${orderLineLabels.join(" | ")}`
+      ];
+      if (linkedOrderRequestIds.length) {
+        notesParts.push(`Linked order request IDs: ${linkedOrderRequestIds.join(", ")}`);
+      }
+      if (linkedRequestSummary) {
+        notesParts.push(`Requested schedule: ${linkedRequestSummary}`);
+      }
 
       const orderPayload = {
         orderId,
+        orderSource: linkedOrderRequestIds.length ? "order_only_checkout" : "cart_checkout",
         productId: items[0]?.product_id || items[0]?.id || "",
         productName: orderLineLabels.join(", "),
         qty: totalQty,
+        date: primaryLinkedRequest?.date || "",
+        time: primaryLinkedRequest?.time || "",
         customerName,
         customerEmail: email,
         phone,
-        notes: `Bank transfer submitted by ${customerName}. Items: ${orderLineLabels.join(" | ")}`,
+        notes: notesParts.join(" • "),
         status: "awaiting_bank_transfer",
+        paymentStatus: "proof_submitted",
         paymentMethod: "bank_transfer",
         amountDue: totals.total,
         bankName: "Opay",
@@ -173,6 +216,18 @@ function setupCheckoutForm() {
         bankAccountName: "Marylou Ihechi Okechukwu",
         bankReference,
         receiptImage: receiptUrl,
+        linkedOrderRequestIds,
+        linkedOrderRequests: linkedOrderRequests.map((request) => ({
+          orderRequestId: String(request.orderRequestId || request.orderId || ""),
+          productId: String(request.productId || ""),
+          productName: String(request.productName || ""),
+          qty: Number(request.qty) > 0 ? Number(request.qty) : 1,
+          date: String(request.date || ""),
+          time: String(request.time || ""),
+          customerName: String(request.customerName || ""),
+          phone: String(request.phone || ""),
+          notes: String(request.notes || "")
+        })),
         orderLines: items.map((item) => ({
           id: item.id,
           productId: item.product_id || item.id,
@@ -674,6 +729,13 @@ async function initCartPage() {
   attachCartEvents();
   setupCheckoutForm();
   setupPromoToggle();
+
+  const openCheckoutParam = new URLSearchParams(window.location.search).get("openCheckout");
+  if (openCheckoutParam === "1") {
+    openCheckoutPanel();
+    const nextUrl = `${window.location.origin}${window.location.pathname}`;
+    window.history.replaceState({}, "", nextUrl);
+  }
 }
 
 document.addEventListener("DOMContentLoaded", initCartPage);

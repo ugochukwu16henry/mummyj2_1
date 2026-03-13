@@ -46,13 +46,15 @@ function normalizeCatalogPayload(rawPayload) {
 
 async function submitOrderRequest(orderPayload) {
   try {
-    await fetch(`${ORDER_API_BASE}/orders`, {
+    const response = await fetch(`${ORDER_API_BASE}/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(orderPayload)
     });
+    return response.ok;
   } catch (error) {
     console.warn("Could not send order request to API:", error.message);
+    return false;
   }
 }
 
@@ -356,8 +358,10 @@ export async function loadMenu(container) {
           return;
         }
 
+        const orderRequestId = `ORQ-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         const order = {
-          orderId: `ORD-${Date.now()}`,
+          orderId: orderRequestId,
+          orderRequestId,
           productId: String(item.id),
           productName: item.name,
           qty,
@@ -366,9 +370,12 @@ export async function loadMenu(container) {
           customerName,
           phone,
           notes,
+          paymentStatus: "unpaid",
           createdAt: new Date().toISOString(),
-          status: "pending"
+          status: "order_request_submitted"
         };
+
+        const sentToAdmin = await submitOrderRequest(order);
 
         addItemToCart({
           ...item,
@@ -377,9 +384,11 @@ export async function loadMenu(container) {
           order_request: order
         });
         updateCartBadge();
-        showAddToCartToast(`${item.name} order added to cart`);
-
-        await submitOrderRequest(order);
+        if (sentToAdmin) {
+          showAddToCartToast(`${item.name} request added. Continue to checkout.`);
+        } else {
+          showAddToCartToast(`${item.name} added to cart. Complete checkout to submit order.`);
+        }
 
         const modal = document.getElementById("order-only-modal");
         if (modal) {
@@ -387,6 +396,8 @@ export async function loadMenu(container) {
           modal.style.display = "none";
         }
         orderForm.reset();
+
+        window.location.href = "cart.html?openCheckout=1";
       });
     }
 

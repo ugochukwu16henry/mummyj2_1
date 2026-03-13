@@ -8,6 +8,30 @@ export default async function handler(req, res) {
       const orders = Array.isArray(catalog.orders) ? catalog.orders : [];
 
       const parsedAmount = Number(incoming.amountDue);
+      const linkedOrderRequestIds = Array.isArray(incoming.linkedOrderRequestIds)
+        ? Array.from(
+            new Set(
+              incoming.linkedOrderRequestIds
+                .map((value) => String(value || "").trim())
+                .filter(Boolean)
+            )
+          )
+        : [];
+      const linkedOrderRequests = Array.isArray(incoming.linkedOrderRequests)
+        ? incoming.linkedOrderRequests
+            .filter((entry) => entry && typeof entry === "object")
+            .map((entry) => ({
+              orderRequestId: String(entry.orderRequestId || entry.orderId || ""),
+              productId: String(entry.productId || ""),
+              productName: String(entry.productName || ""),
+              qty: Number(entry.qty) > 0 ? Number(entry.qty) : 1,
+              date: String(entry.date || ""),
+              time: String(entry.time || ""),
+              customerName: String(entry.customerName || ""),
+              phone: String(entry.phone || ""),
+              notes: String(entry.notes || "")
+            }))
+        : [];
       const orderLines = Array.isArray(incoming.orderLines)
         ? incoming.orderLines
             .filter((line) => line && typeof line === "object")
@@ -23,6 +47,8 @@ export default async function handler(req, res) {
 
       const order = {
         orderId: String(incoming.orderId || `ORD-${Date.now()}`),
+        orderRequestId: String(incoming.orderRequestId || ""),
+        orderSource: String(incoming.orderSource || ""),
         productId: String(incoming.productId || ""),
         productName: String(incoming.productName || ""),
         qty: Number(incoming.qty) > 0 ? Number(incoming.qty) : 1,
@@ -33,6 +59,7 @@ export default async function handler(req, res) {
         phone: String(incoming.phone || ""),
         notes: String(incoming.notes || ""),
         status: String(incoming.status || "pending"),
+        paymentStatus: String(incoming.paymentStatus || ""),
         paymentMethod: String(incoming.paymentMethod || ""),
         amountDue: Number.isFinite(parsedAmount) ? parsedAmount : 0,
         bankName: String(incoming.bankName || ""),
@@ -40,13 +67,35 @@ export default async function handler(req, res) {
         bankAccountName: String(incoming.bankAccountName || ""),
         bankReference: String(incoming.bankReference || ""),
         receiptImage: String(incoming.receiptImage || ""),
+        linkedOrderRequestIds,
+        linkedOrderRequests,
         orderLines,
         createdAt: incoming.createdAt || new Date().toISOString()
       };
 
+      const checkoutOrderId = String(order.orderId || "").trim();
+      const updatedOrders = linkedOrderRequestIds.length
+        ? orders.map((existingOrder) => {
+            const existingRequestId = String(
+              existingOrder.orderRequestId || existingOrder.orderId || ""
+            ).trim();
+            if (!existingRequestId || !linkedOrderRequestIds.includes(existingRequestId)) {
+              return existingOrder;
+            }
+
+            return {
+              ...existingOrder,
+              status: "merged_to_checkout",
+              paymentStatus: "linked_to_checkout",
+              linkedCheckoutOrderId: checkoutOrderId,
+              linkedCheckoutAt: new Date().toISOString()
+            };
+          })
+        : orders;
+
       const nextCatalog = sanitizeCatalog({
         ...catalog,
-        orders: [order, ...orders]
+        orders: [order, ...updatedOrders]
       });
 
       const github = await commitCatalogToGithub(nextCatalog, "customer@mummyj2treats.com");
