@@ -59,22 +59,6 @@
       "order_only": false
     },
     {
-      "id": "p005",
-      "name": "Doughnuts (12)",
-      "price": 2400,
-      "category": "Pastries",
-      "tags": [
-        "snack",
-        "sweet"
-      ],
-      "stock": 50,
-      "description": "Sugar glazed or chocolate",
-      "image": "images/doughnut.jpg",
-      "last_updated": "2026-03-11",
-      "out_of_stock": true,
-      "order_only": false
-    },
-    {
       "id": "p006",
       "name": "Chin Chin (500g)",
       "price": 2000,
