@@ -153,8 +153,10 @@
       "customerName": "Henry",
       "phone": "09015718484",
       "notes": "Bank transfer submitted by Henry. Items: Parfait (Large) x1",
-      "status": "awaiting_bank_transfer",
-      "createdAt": "2026-03-13T12:03:41.530Z"
+      "status": "Confirmed",
+      "createdAt": "2026-03-13T12:03:41.530Z",
+      "approvedAt": "2026-03-13T12:07:13.658Z",
+      "approvedBy": "ugochukwuhenry16@gmail.com"
     }
   ]
 }
