@@ -186,8 +186,10 @@
       "customerName": "Mary",
       "phone": "09015718484",
       "notes": "Bank transfer submitted by Mary. Items: Parfait Small Cup x3",
-      "status": "awaiting_bank_transfer",
-      "createdAt": "2026-03-13T07:17:23.175Z"
+      "status": "Confirmed",
+      "createdAt": "2026-03-13T07:17:23.175Z",
+      "approvedAt": "2026-03-13T07:18:39.098Z",
+      "approvedBy": "ugochukwuhenry16@gmail.com"
     },
     {
       "orderId": "ORD-1773359497600",
