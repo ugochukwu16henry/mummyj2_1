@@ -144,6 +144,19 @@
   },
   "orders": [
     {
+      "orderId": "ORD-1773400703231",
+      "productId": "p2132",
+      "productName": "Unsweetened Zobo x20",
+      "qty": 20,
+      "date": "2026-03-14",
+      "time": "08:00",
+      "customerName": "Ugochukwu Ugochukwu",
+      "phone": "+2348152795852",
+      "notes": "Bank transfer submitted by Ugochukwu Ugochukwu. Items: Unsweetened Zobo x20 • Linked order request IDs: ORQ-1773400619669-758 • Requested schedule: ORQ-1773400619669-758 (Unsweetened Zobo x20 - 2026-03-14 08:00)",
+      "status": "awaiting_bank_transfer",
+      "createdAt": "2026-03-13T11:18:23.231Z"
+    },
+    {
       "orderId": "ORD-1773386243175",
       "productId": "p004",
       "productName": "Parfait Small Cup x3",
