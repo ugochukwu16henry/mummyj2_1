@@ -1,11 +1,11 @@
 const API_BASE = window.location.hostname === "localhost"
   ? "http://localhost:5050/api"
-  : "/api";
+  : "https://mummyj21-frontend-production.up.railway.app/api";
 
 const MAX_TESTIMONIAL_IMAGE_BYTES = 4 * 1024 * 1024; // 4MB
 
 async function fetchContent() {
-  const response = await fetch(`${API_BASE}/content`);
+  const response = await fetch(`${API_BASE}/content`, { cache: "no-store" });
   if (!response.ok) {
     throw new Error("Could not load stories");
   }
