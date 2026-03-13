@@ -13,12 +13,18 @@ async function fetchContent() {
 }
 
 function renderSyncStatus(date, hasError = false) {
-  const syncStatus = document.getElementById("content-sync-status");
-  if (!syncStatus) return;
+  const syncStatusElements = [
+    document.getElementById("content-sync-status"),
+    document.getElementById("blog-sync-status")
+  ].filter(Boolean);
+
+  if (!syncStatusElements.length) return;
 
   if (hasError) {
-    syncStatus.textContent = "Last synced: unavailable";
-    syncStatus.classList.remove("ok");
+    syncStatusElements.forEach((element) => {
+      element.textContent = "Last synced: unavailable";
+      element.classList.remove("ok");
+    });
     return;
   }
 
@@ -27,8 +33,11 @@ function renderSyncStatus(date, hasError = false) {
     timeStyle: "short"
   });
 
-  syncStatus.textContent = `Last synced: ${formatter.format(date)}`;
-  syncStatus.classList.add("ok");
+  const text = `Last synced: ${formatter.format(date)}`;
+  syncStatusElements.forEach((element) => {
+    element.textContent = text;
+    element.classList.add("ok");
+  });
 }
 
 function fileToDataUrl(file) {
