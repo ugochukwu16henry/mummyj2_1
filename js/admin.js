@@ -739,15 +739,32 @@ async function deleteOrderReceipt(orderId) {
 }
 
 async function deleteOrderCompletely(orderId) {
-  await apiFetch(`/admin/orders/${encodeURIComponent(orderId)}`, { method: "DELETE" });
-  state.catalog = {
-    ...state.catalog,
-    orders: (Array.isArray(state.catalog.orders) ? state.catalog.orders : []).filter(
-      (entry) => String(entry.orderId) !== String(orderId)
-    )
-  };
-  renderOrders();
-  renderJsonPreview();
+  const currentOrders = Array.isArray(state.catalog.orders) ? [...state.catalog.orders] : [];
+  const targetExists = currentOrders.some((entry) => String(entry.orderId) === String(orderId));
+  if (!targetExists) {
+    throw new Error("Order not found");
+  }
+
+  const nextOrders = currentOrders.filter((entry) => String(entry.orderId) !== String(orderId));
+
+  try {
+    await apiFetch(`/admin/orders/${encodeURIComponent(orderId)}`, { method: "DELETE" });
+    state.catalog = {
+      ...state.catalog,
+      orders: nextOrders
+    };
+    renderOrders();
+    renderJsonPreview();
+    return;
+  } catch {
+    state.catalog = {
+      ...state.catalog,
+      orders: nextOrders
+    };
+    renderOrders();
+    renderJsonPreview();
+    await saveCatalog();
+  }
 }
 
 function renderCategories() {
