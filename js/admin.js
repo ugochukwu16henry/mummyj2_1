@@ -347,6 +347,28 @@ function getOrderStatusClass(status) {
   return "pending";
 }
 
+function getPaymentStatusClass(status) {
+  const normalized = String(status || "").toLowerCase();
+  if (!normalized) {
+    return "pending";
+  }
+  if (normalized.includes("paid") || normalized.includes("approved") || normalized.includes("confirmed")) {
+    return "paid";
+  }
+  if (normalized.includes("flagged") || normalized.includes("failed") || normalized.includes("rejected")) {
+    return "flagged";
+  }
+  return "pending";
+}
+
+function formatStatusLabel(value, fallback = "pending") {
+  const text = String(value || fallback || "").trim();
+  if (!text) {
+    return String(fallback || "pending");
+  }
+  return text.replace(/_/g, " ");
+}
+
 function formatCurrency(value) {
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
@@ -539,7 +561,12 @@ function renderOrders() {
       <td>${getOrderCustomerEmail(order) || "-"}</td>
       <td>${order.phone || "-"}</td>
       <td>${getPaymentLabel(order)}</td>
-      <td><span class="status-badge ${getOrderStatusClass(order.status)}">${order.status || "pending"}</span></td>
+      <td>
+        <span class="status-badge ${getOrderStatusClass(order.status)}">${formatStatusLabel(order.status, "pending")}</span>
+        ${order.paymentStatus
+          ? `<br><span class="status-badge ${getPaymentStatusClass(order.paymentStatus)}">${formatStatusLabel(order.paymentStatus, "pending")}</span>`
+          : ""}
+      </td>
       <td class="mono">${getOrderAmount(order) > 0 ? formatCurrency(getOrderAmount(order)) : "-"}</td>
       <td class="mono">${order.bankReference || "-"}</td>
       <td>
