@@ -196,6 +196,7 @@ h2 {
 .story-card-media {
     width: 100%;
     aspect-ratio: 4 / 5;
+    min-height: 220px;
     background: rgba(45, 49, 66, 0.06);
     display: grid;
     place-items: center;
@@ -204,6 +205,7 @@ h2 {
 
 .story-card-media-landscape {
     aspect-ratio: 16 / 10;
+    min-height: 190px;
 }
 
 .story-card-media img,
@@ -466,6 +468,12 @@ button:focus {
 footer {
     text-align: center;
     padding: 2rem;
+}
+
+footer p {
+    margin: 0;
+    line-height: 1.75;
+    overflow-wrap: anywhere;
 }
 
 footer a {
@@ -1573,6 +1581,16 @@ body.cart-screen.checkout-focus .cart-link {
     color: #fff;
 }
 
+@supports not (aspect-ratio: 1 / 1) {
+    .story-card-media {
+        height: 240px;
+    }
+
+    .story-card-media-landscape {
+        height: 200px;
+    }
+}
+
 .cart-empty {
     background: #fff;
     border-radius: 14px;
@@ -1917,6 +1935,15 @@ body.force-mobile .remove-item {
     .mobile-checkout-bar .btn {
         min-width: 105px;
         padding: 0.7rem 0.9rem;
+    }
+
+    footer {
+        padding-bottom: 5.4rem;
+    }
+
+    .whatsapp-float {
+        right: 0.75rem;
+        bottom: 4.7rem;
     }
 }
 
