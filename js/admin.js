@@ -583,17 +583,18 @@ function renderOrders() {
           const deleteReceiptButton = order.receiptImage
             ? `<button type="button" class="btn mini danger" data-delete-receipt="${order.orderId || ""}">Delete Receipt</button>`
             : "";
+          const deleteOrderButton = `<button type="button" class="btn mini danger" data-delete-order="${order.orderId || ""}">Delete Order</button>`;
 
           if (status === "awaiting_bank_transfer") {
-            return `<div class="row-actions"><button type="button" class="btn mini primary" data-approve-send-order="${order.orderId || ""}">Approve + Send WA</button><button type="button" class="btn mini" data-approve-order="${order.orderId || ""}">Approve Only</button><button type="button" class="btn mini danger" data-flag-order="${order.orderId || ""}">Flag</button>${deleteReceiptButton}</div>`;
+            return `<div class="row-actions"><button type="button" class="btn mini primary" data-approve-send-order="${order.orderId || ""}">Approve + Send WA</button><button type="button" class="btn mini" data-approve-order="${order.orderId || ""}">Approve Only</button><button type="button" class="btn mini danger" data-flag-order="${order.orderId || ""}">Flag</button>${deleteReceiptButton}${deleteOrderButton}</div>`;
           }
           if (status === "flagged") {
-            return `<div class="row-actions"><button type="button" class="btn mini" data-unflag-order="${order.orderId || ""}">Move to Pending</button>${deleteReceiptButton}</div>`;
+            return `<div class="row-actions"><button type="button" class="btn mini" data-unflag-order="${order.orderId || ""}">Move to Pending</button>${deleteReceiptButton}${deleteOrderButton}</div>`;
           }
           if (status === "confirmed" || status === "paid") {
-            return `<div class="row-actions"><button type="button" class="btn mini" data-send-whatsapp="${order.orderId || ""}">WhatsApp</button><button type="button" class="btn mini" data-send-email="${order.orderId || ""}">Email</button><button type="button" class="btn mini" data-print-receipt="${order.orderId || ""}">PDF</button>${deleteReceiptButton}</div>`;
+            return `<div class="row-actions"><button type="button" class="btn mini" data-send-whatsapp="${order.orderId || ""}">WhatsApp</button><button type="button" class="btn mini" data-send-email="${order.orderId || ""}">Email</button><button type="button" class="btn mini" data-print-receipt="${order.orderId || ""}">PDF</button>${deleteReceiptButton}${deleteOrderButton}</div>`;
           }
-          return deleteReceiptButton || "-";
+          return `<div class="row-actions">${deleteReceiptButton}${deleteOrderButton}</div>`;
         })()}
       </td>
       <td>${order.qty || 1}</td>
@@ -735,6 +736,18 @@ async function deleteOrderReceipt(orderId) {
   renderOrders();
   renderJsonPreview();
   await saveCatalog();
+}
+
+async function deleteOrderCompletely(orderId) {
+  await apiFetch(`/admin/orders/${encodeURIComponent(orderId)}`, { method: "DELETE" });
+  state.catalog = {
+    ...state.catalog,
+    orders: (Array.isArray(state.catalog.orders) ? state.catalog.orders : []).filter(
+      (entry) => String(entry.orderId) !== String(orderId)
+    )
+  };
+  renderOrders();
+  renderJsonPreview();
 }
 
 function renderCategories() {
@@ -1707,6 +1720,7 @@ if (ordersTable) {
   ordersTable.addEventListener("click", async (event) => {
     const receiptButton = event.target.closest("button[data-open-receipt]");
     const deleteReceiptButton = event.target.closest("button[data-delete-receipt]");
+    const deleteOrderButton = event.target.closest("button[data-delete-order]");
     const approveAndSendButton = event.target.closest("button[data-approve-send-order]");
     const approveButton = event.target.closest("button[data-approve-order]");
     const flagButton = event.target.closest("button[data-flag-order]");
@@ -1734,6 +1748,33 @@ if (ordersTable) {
       } catch (error) {
         deleteReceiptButton.disabled = false;
         showSyncing(true, `Could not delete receipt: ${error.message}`);
+        setTimeout(() => showSyncing(false), 1800);
+      }
+      return;
+    }
+
+    if (deleteOrderButton) {
+      const orderId = deleteOrderButton.dataset.deleteOrder;
+      if (!orderId) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        "Permanently delete this entire order record? This cannot be undone."
+      );
+      if (!confirmed) {
+        return;
+      }
+
+      try {
+        deleteOrderButton.disabled = true;
+        showSyncing(true, "Deleting order...");
+        await deleteOrderCompletely(orderId);
+        showSyncing(true, "Order deleted.");
+        setTimeout(() => showSyncing(false), 1400);
+      } catch (error) {
+        deleteOrderButton.disabled = false;
+        showSyncing(true, `Could not delete order: ${error.message}`);
         setTimeout(() => showSyncing(false), 1800);
       }
       return;

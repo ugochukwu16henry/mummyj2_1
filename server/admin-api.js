@@ -647,6 +647,31 @@ app.get("/api/orders", authMiddleware, async (_req, res) => {
   }
 });
 
+app.delete("/api/admin/orders/:id", authMiddleware, async (req, res) => {
+  try {
+    const id = String(req.params.id || "").trim();
+    if (!id) {
+      return res.status(400).json({ error: "Order ID is required" });
+    }
+
+    const catalog = await readCatalog();
+    const existing = Array.isArray(catalog.orders) ? catalog.orders : [];
+    const nextOrders = existing.filter((entry) => String(entry.orderId || "") !== id);
+
+    if (nextOrders.length === existing.length) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const nextCatalog = sanitizeCatalog({ ...catalog, orders: nextOrders });
+    await writeCatalog(nextCatalog);
+    const github = await commitCatalogToGithub(nextCatalog, req.user?.email);
+
+    return res.json({ ok: true, github });
+  } catch (error) {
+    return res.status(500).json({ error: error.message || "Could not delete order" });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Admin API running at http://localhost:${PORT}`);
 });
