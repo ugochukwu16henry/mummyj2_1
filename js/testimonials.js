@@ -12,6 +12,25 @@ async function fetchContent() {
   return response.json();
 }
 
+function renderSyncStatus(date, hasError = false) {
+  const syncStatus = document.getElementById("content-sync-status");
+  if (!syncStatus) return;
+
+  if (hasError) {
+    syncStatus.textContent = "Last synced: unavailable";
+    syncStatus.classList.remove("ok");
+    return;
+  }
+
+  const formatter = new Intl.DateTimeFormat("en-NG", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+
+  syncStatus.textContent = `Last synced: ${formatter.format(date)}`;
+  syncStatus.classList.add("ok");
+}
+
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -162,6 +181,7 @@ async function initTestimonials() {
     content = await fetchContent();
   } catch (error) {
     console.warn(error.message);
+    renderSyncStatus(new Date(), true);
     return;
   }
 
@@ -171,6 +191,7 @@ async function initTestimonials() {
   renderHomeTestimonials(testimonials);
   renderPageTestimonials(testimonials);
   renderBlog(posts);
+  renderSyncStatus(new Date());
 }
 
 function setupTestimonialForm() {
